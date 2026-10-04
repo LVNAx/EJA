@@ -21,7 +21,7 @@
 ---
 
 > [!IMPORTANT]
-> EJA adalah **alat bantu skrining, bukan alat diagnosis**. Hasilnya hanya bahan diskusi dengan psikolog klinis atau dokter anak tumbuh kembang. Bobot dan ambang skor masih **asumsi awal** yang belum divalidasi lewat pilot, jadi EJA tidak mengklaim akurasi deteksi.
+> EJA adalah **alat bantu skrining, bukan alat diagnosis**. Hasilnya adalah bahan diskusi dengan psikolog klinis atau dokter anak tumbuh kembang. Bobot dan ambang skor masih **asumsi awal** yang belum divalidasi lewat pilot, jadi EJA tidak mengklaim akurasi deteksi.
 
 ## Tentang Proyek
 
