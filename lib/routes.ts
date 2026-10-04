@@ -11,4 +11,5 @@ export const ROUTES = {
   screening: (id: string) => `/screening/${id}`,
   /** Beranda anak (Modul Belajar). */
   childHome: (id: string) => `/child/${id}`,
+  learningHome: (id: string) => `/child/${id}/belajar`,
 } as const;

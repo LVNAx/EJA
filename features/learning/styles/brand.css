@@ -1,0 +1,552 @@
+/* Scoped learning module styles; the public site keeps its own theme. */
+/* Visual language shared with the EJA site: violet, coral, soft glass, and Outfit. */
+.learning-root {
+  --cream: #ffffff;
+  --paper: #ffffff;
+  --ink: #1e0a45;
+  --muted: #655d70;
+  --teal: #9333ea;
+  --teal-dark: #7e22ce;
+  --mint: #f3e8ff;
+  --yellow: #ff8c61;
+  --line: #e9dff0;
+  --shadow: 0 14px 44px rgba(88, 28, 135, 0.14);
+  --brand-50: #faf5ff;
+  --brand-100: #f3e8ff;
+  --brand-200: #e9d5ff;
+  --brand-300: #d8b4fe;
+  --brand-500: #a855f7;
+  --brand-700: #7e22ce;
+  --accent-50: #fff1ea;
+  --accent-100: #ffe3d6;
+  --accent-300: #ffb596;
+  --accent-500: #ff8c61;
+  --accent-600: #f5723f;
+  --success: #047857;
+}
+
+.learning-root {
+  background:
+    radial-gradient(ellipse 47% 35% at 90% 9%, #e9d5ff9c, transparent 100%),
+    radial-gradient(ellipse 45% 45% at 4% 55%, #f3e8ffb8, transparent 100%),
+    #ffffff;
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-outfit), Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.learning-root a:focus-visible,
+.learning-root button:focus-visible,
+.learning-root select:focus-visible,
+.learning-root input:focus-visible {
+  outline-color: var(--brand-500);
+}
+
+.learning-root .site-shell.font-opendyslexic {
+  font-family: var(--font-open-dyslexic), Arial, sans-serif;
+}
+
+.learning-root .site-header {
+  position: sticky;
+  z-index: 15;
+  top: 0;
+  height: auto;
+  padding: 12px 0 0;
+  border: 0;
+  background: transparent;
+}
+
+.learning-root .header-inner {
+  width: min(1220px, calc(100% - 32px));
+  min-height: 68px;
+  padding: 9px 22px;
+  border: 1px solid #ffffffdc;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffffd9, #ffffffad 55%, #ffffffd1);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 12px 36px #581c8726;
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+.learning-root .brand-mark {
+  width: 40px;
+  height: 40px;
+  display: block;
+  flex: none;
+  border-radius: 0;
+  background: none;
+  transform: none;
+}
+
+.learning-root .brand-name {
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+
+.learning-root .top-nav {
+  margin-left: 0;
+}
+
+.learning-root .top-nav a {
+  border-radius: 999px;
+  color: #665d73;
+}
+
+.learning-root .top-nav a.active,
+.learning-root .top-nav a:hover {
+  background: var(--brand-100);
+  color: var(--ink);
+}
+
+.learning-root .header-xp {
+  border-color: var(--accent-100);
+  background: var(--accent-50);
+  color: var(--ink);
+}
+
+.learning-root .header-xp svg {
+  fill: var(--accent-500);
+  stroke: var(--accent-600);
+}
+
+.learning-root .icon-button {
+  border-color: var(--brand-200);
+  border-radius: 999px;
+  color: var(--brand-700);
+}
+
+.learning-root .icon-button:hover {
+  background: var(--brand-50);
+}
+
+.learning-root .site-footer {
+  border-color: var(--brand-200);
+  background: #ffffffba;
+  color: var(--muted);
+}
+
+.learning-root .footer-inner strong,
+.learning-root .eyebrow,
+.learning-root .section-kicker,
+.learning-root .panel-kicker,
+.learning-root .step-index,
+.learning-root .quiz-label {
+  color: var(--brand-700);
+}
+
+.learning-root .eyebrow-dot {
+  background: var(--accent-500);
+}
+
+.learning-root .button {
+  border-radius: 999px;
+  transition:
+    transform 0.18s,
+    background 0.18s,
+    box-shadow 0.18s;
+}
+
+.learning-root .button-primary {
+  border-color: var(--accent-500);
+  background: var(--accent-500);
+  color: var(--ink);
+  box-shadow: 0 8px 24px #ff8c6140;
+}
+
+.learning-root .button-primary:hover:not(:disabled) {
+  background: var(--accent-600);
+  border-color: var(--accent-600);
+  box-shadow: 0 10px 30px #ff8c6180;
+}
+
+.learning-root .button-light,
+.learning-root .button-outline {
+  border-color: var(--brand-200);
+  background: #ffffffcf;
+  color: var(--ink);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 6px 20px #581c871a;
+}
+
+.learning-root .button-light:hover,
+.learning-root .button-outline:hover {
+  background: var(--brand-50);
+}
+
+.learning-root .home-hero,
+.learning-root .subject-hero,
+.learning-root .literacy-hero {
+  border-color: var(--brand-200);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 78% 20%, #e9d5ff, transparent 34%),
+    linear-gradient(120deg, var(--brand-50), #ffffff 63%, var(--accent-50));
+  box-shadow: var(--shadow);
+}
+
+.learning-root .home-hero::before {
+  border-color: #a855f738;
+}
+
+.learning-root .hero-copy h1 em,
+.learning-root .subject-hero h1 em,
+.learning-root .summary-card h1 em,
+.learning-root .literacy-hero h1 em {
+  color: var(--brand-700);
+}
+
+.learning-root .hero-copy p,
+.learning-root .subject-hero p {
+  color: var(--muted);
+}
+
+.learning-root .sun-shape {
+  background: var(--brand-200);
+}
+
+.learning-root .hero-notebook {
+  background: #ffffffeb;
+  border-color: var(--brand-200);
+  box-shadow:
+    8px 14px 0 var(--brand-300),
+    0 21px 35px #581c8729;
+}
+
+.learning-root .notebook-spiral,
+.learning-root .notebook-lines {
+  color: var(--brand-300);
+}
+
+.learning-root .notebook-lines {
+  background: var(--brand-200);
+  box-shadow: 0 15px var(--brand-200);
+}
+
+.learning-root .notebook-equation span,
+.learning-root .hero-spark {
+  color: var(--accent-500);
+}
+
+.learning-root .spark-two {
+  color: var(--brand-500);
+}
+
+.learning-root .hero-pencil {
+  border-color: #9a4a30;
+  background: var(--accent-500);
+}
+
+.learning-root .hero-pencil::before {
+  border-color: #9a4a30;
+  background: var(--accent-300);
+}
+
+.learning-root .stat-card,
+.learning-root .lesson-card,
+.learning-root .module-card,
+.learning-root .literacy-card,
+.learning-root .reading-list,
+.learning-root .writing-picker,
+.learning-root .reading-workspace,
+.learning-root .writing-workspace,
+.learning-root .content-panel,
+.learning-root .summary-card {
+  border-color: #ffffffd9;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffffffd9, #ffffffbd 55%, #ffffffdc);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 #a855f720,
+    0 14px 44px #581c8729;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+.learning-root .literacy-module,
+.learning-root .math-module {
+  background: linear-gradient(135deg, #ffffffdb, #faf5ffde);
+}
+
+.learning-root .module-symbol,
+.learning-root .literacy-card-icon.reading,
+.learning-root .literacy-card-icon.writing,
+.learning-root .stat-icon,
+.learning-root .streak-stat .stat-icon,
+.learning-root .note-icon,
+.learning-root .coming-icon,
+.learning-root .summary-medal {
+  border-radius: 18px;
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.learning-root .math-module .module-symbol,
+.learning-root .literacy-card-icon.reading,
+.learning-root .xp-stat .stat-icon {
+  background: var(--accent-100);
+  color: #9a4a30;
+}
+
+.learning-root .module-card p,
+.learning-root .literacy-card p,
+.learning-root .coming-note p,
+.learning-root .summary-lead,
+.learning-root .gentle-note p {
+  color: var(--muted);
+}
+
+.learning-root .literacy-doodle span:first-child,
+.learning-root .subject-doodle span:first-child {
+  background: #ffffffed;
+  color: var(--brand-700);
+  box-shadow: 0 12px 28px #581c8729;
+}
+
+.learning-root .literacy-doodle span:last-child,
+.learning-root .subject-doodle span:nth-child(2) {
+  background: var(--accent-100);
+  color: var(--ink);
+}
+
+.learning-root .lesson-card-art.fraction,
+.learning-root .visual-panel {
+  background: var(--brand-100);
+}
+
+.learning-root .lesson-card-art.multiply {
+  background: var(--accent-50);
+}
+
+.learning-root .quarter-art {
+  border-color: var(--brand-700);
+  background: conic-gradient(var(--brand-500) 0 25%, #ffffff 25% 100%);
+}
+
+.learning-root .quarter-art::before,
+.learning-root .quarter-art::after {
+  background: var(--brand-700);
+}
+
+.learning-root .multiply-art,
+.learning-root .card-link,
+.learning-root .text-link,
+.learning-root .summary-stats strong {
+  color: var(--brand-700);
+}
+
+.learning-root .status-pill,
+.learning-root .count-badge,
+.learning-root .step-badge,
+.learning-root .step-index,
+.learning-root .coming-note,
+.learning-root .summary-stats div,
+.learning-root .summary-learned {
+  background: var(--brand-50);
+  color: var(--brand-700);
+  border-color: var(--brand-200);
+}
+
+.learning-root .gentle-note,
+.learning-root .summary-stats div:first-child,
+.learning-root .word-help {
+  border-color: var(--accent-100);
+  background: var(--accent-50);
+}
+
+.learning-root .note-icon,
+.learning-root .summary-medal {
+  background: var(--accent-100);
+  color: #9a4a30;
+}
+
+.learning-root .breadcrumbs,
+.learning-root .reading-kind,
+.learning-root .syllable-caption,
+.learning-root .syllable-dash,
+.learning-root .category-label,
+.learning-root .trace-tag,
+.learning-root .visual-panel-bottom,
+.learning-root .lesson-meta,
+.learning-root .group-caption,
+.learning-root .trace-feedback p,
+.learning-root .summary-learned li {
+  color: var(--muted);
+}
+
+.learning-root .breadcrumbs span:last-child,
+.learning-root .lesson-text {
+  color: var(--ink);
+}
+
+.learning-root .reading-option,
+.learning-root .character-categories button,
+.learning-root .character-grid button,
+.learning-root .quiz-option,
+.learning-root .object-group {
+  border-color: var(--brand-200);
+  border-radius: 18px;
+  background: #fffffff0;
+  color: var(--ink);
+}
+
+.learning-root .reading-option:hover,
+.learning-root .reading-option.selected,
+.learning-root .character-categories button.selected,
+.learning-root .character-grid button:hover,
+.learning-root .character-grid button.selected,
+.learning-root .quiz-option:hover {
+  border-color: var(--brand-500);
+  background: var(--brand-100);
+  color: var(--ink);
+}
+
+.learning-root .reading-target,
+.learning-root .trace-board,
+.learning-root .visual-label,
+.learning-root .reading-try,
+.learning-root .trace-feedback {
+  border-color: var(--brand-200);
+  background: var(--brand-50);
+}
+
+.learning-root .practice-step > span,
+.learning-root .trace-tag {
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.learning-root .syllable-display,
+.learning-root .second-step,
+.learning-root .quiz-block {
+  border-color: var(--brand-200);
+}
+
+.learning-root .syllable-chip {
+  border-color: var(--brand-200);
+  border-radius: 12px;
+  color: var(--brand-700);
+}
+
+.learning-root .syllable-chip.active,
+.learning-root .speaking-chunk,
+.learning-root .speaking-word {
+  border-color: var(--accent-500);
+  background: var(--accent-100);
+  color: var(--ink);
+}
+
+.learning-root .speaking-chunk {
+  box-shadow: 0 0 0 6px var(--accent-100);
+}
+
+.learning-root .audio-button {
+  border-color: var(--brand-200);
+  border-radius: 999px;
+  background: var(--brand-100);
+  color: var(--brand-700);
+}
+
+.learning-root .audio-button:hover:not(:disabled) {
+  background: var(--brand-200);
+}
+
+.learning-root .audio-stop {
+  background: #ffffffde;
+  color: var(--muted);
+}
+
+.learning-root .trace-board {
+  background-image:
+    linear-gradient(var(--brand-100) 1px, transparent 1px),
+    linear-gradient(90deg, var(--brand-100) 1px, transparent 1px);
+}
+
+.learning-root .trace-guide.guide-strong polyline {
+  stroke: var(--brand-300);
+}
+
+.learning-root .trace-feedback strong,
+.learning-root .reading-feedback,
+.learning-root .summary-lead strong,
+.learning-root .word-help strong,
+.learning-root .summary-learned li svg {
+  color: var(--brand-700);
+}
+
+.learning-root .summary-stats div:first-child strong {
+  color: #9a4a30;
+}
+
+.learning-root .progress-track {
+  background: var(--brand-100);
+}
+
+.learning-root .progress-track span {
+  background: var(--brand-500);
+}
+
+.learning-root .quiz-option.correct,
+.learning-root .quiz-feedback.positive {
+  border-color: #34d399;
+  background: #ecfdf5;
+  color: var(--success);
+}
+
+.learning-root .quiz-option.try-again,
+.learning-root .quiz-feedback.gentle {
+  border-color: var(--accent-300);
+  background: var(--accent-50);
+  color: #9a4a30;
+}
+
+.learning-root .settings-panel {
+  border: 1px solid var(--brand-200);
+  background: #ffffffed;
+  box-shadow: var(--shadow);
+}
+
+.learning-root .setting-row select {
+  border-color: var(--brand-200);
+}
+
+.learning-root .modal-backdrop {
+  background: #1e0a4573;
+}
+
+@media (max-width: 650px) {
+  .learning-root .site-header {
+    height: auto;
+    padding-top: 8px;
+  }
+
+  .learning-root .header-inner {
+    width: calc(100% - 16px);
+    min-height: 60px;
+    padding: 7px 12px;
+  }
+
+  .learning-root .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .learning-root .top-nav a {
+    padding: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  .learning-root .brand-name {
+    display: inline;
+    font-size: 18px;
+  }
+
+  .learning-root .header-xp {
+    padding: 7px;
+  }
+}

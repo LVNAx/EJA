@@ -29,9 +29,9 @@ Anak disleksia berbahasa Indonesia sering terlambat terdeteksi, sementara skrini
 
 1. **Skrining**: empat permainan pendek yang terasa seperti bermain, bukan ujian.
 2. **Rekomendasi**: level risiko dengan bahasa awam, saran untuk orang tua dan guru, serta kapan perlu menemui profesional.
-3. **Belajar** *(dalam pengembangan)*: materi SD yang dipecah kecil, dengan suara, ilustrasi, dan kuis.
+3. **Belajar** *(prototipe)*: latihan membaca dan menulis, serta dua materi matematika bertahap dengan suara, ilustrasi, dan kuis.
 
-Semua data terkumpul di **dasbor orang tua**. Anak tidak pernah melihat tingkat risikonya.
+Hasil skrining tampil di **dasbor orang tua**. Progres modul belajar prototipe saat ini tersimpan per anak di browser dan belum tersambung ke dasbor. Anak tidak pernah melihat tingkat risikonya.
 
 Proyek ini dibuat untuk **JOINTS UGM 2026**.
 
@@ -45,7 +45,7 @@ Proyek ini dibuat untuk **JOINTS UGM 2026**.
 | Dasbor orang tua | ✅ Selesai, diuji dalam **mode demo** |
 | Auth orang tua, profil anak, kunci dasbor | ⚠️ Ada, **belum diuji terhadap Supabase sungguhan** |
 | Email notifikasi (cron) | ⚠️ Ada, belum pernah mengirim; tanpa kunci hanya *dry-run* |
-| Modul belajar | 🚧 Belum ada (kartu "Segera hadir") |
+| Modul belajar | ✅ Prototipe membaca, menulis A–Z/a–z/0–9, dan 2 materi matematika; progres masih lokal per anak |
 | Masuk anak dengan PIN | 🚧 Belum ada |
 
 ## Fitur
@@ -81,6 +81,14 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 - Notifikasi (hasil baru, sesi perlu diulang, 5 hari tidak aktif, akurasi kuis turun) dengan status dibaca.
 - Perbandingan dua anak dalam satu akun.
 
+### Belajar (prototipe)
+
+- Beranda anak membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
+- Contoh baca diucapkan per suku kata dengan jeda dan penyorotan; mikrofon opsional.
+- Menulis memakai panduan goresan untuk huruf besar A–Z, huruf kecil a–z, dan angka 0–9. Skor mempertimbangkan jarak, cakupan, jumlah goresan, dan pengulangan garis.
+- Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok, disajikan bertahap dengan kuis singkat.
+- Font OpenDyslexic, ukuran teks, kecepatan suara, dan efek apresiasi dapat diatur. Progres, XP, dan sesi tersimpan di browser dengan kunci terpisah untuk tiap anak. Data ini belum ditulis ke tabel Supabase dan belum muncul di dasbor orang tua.
+
 ### Keamanan & privasi
 
 | Hal | Cara |
@@ -98,7 +106,7 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 | Bagian | Teknologi |
 |---|---|
 | Framework | Next.js 14 (App Router), React 18, TypeScript |
-| Gaya & animasi | Tailwind CSS, Framer Motion, ikon lucide-react |
+| Gaya & animasi | Tailwind CSS, Framer Motion, ikon lucide-react; gaya modul belajar diisolasi di `features/learning/styles` |
 | Latar | Shader WebGL buatan sendiri |
 | Backend & data | Supabase (PostgreSQL, Auth, RLS) lewat `@supabase/ssr` |
 | Suara | Web Speech API bawaan peramban (`id-ID`) |
@@ -114,9 +122,10 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 │   ├── (auth)/            # /login, /daftar, /unlock
 │   ├── dashboard/         # dasbor orang tua (ringkasan, anak, laporan, perbandingan)
 │   ├── screening/         # permainan skrining + hasil demo
-│   ├── child/             # beranda anak (stub)
+│   ├── child/             # beranda anak dan rute modul belajar
 │   └── api/cron/          # pengiriman email notifikasi
 ├── components/            # auth, dashboard (radar, grafik), screening, site
+├── features/learning/     # konten, komponen, penyimpanan lokal, font, dan CSS modul belajar
 ├── lib/
 │   ├── screening/         # config, scoring, quality, soal
 │   ├── recommendations/   # teks rekomendasi + penyusun laporan
@@ -167,6 +176,10 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 | `/dashboard/child/demo-nadia` | Dasbor anak (Risiko Rendah, 6 hari tidak aktif) |
 | `/dashboard/child/demo-bima` | Kondisi kosong (belum skrining) |
 | `/dashboard/compare` | Perbandingan dua anak |
+| `/child/demo-rizky` | Beranda anak dengan akses ke modul belajar |
+| `/child/demo-rizky/belajar` | Beranda modul belajar |
+| `/child/demo-rizky/belajar/latihan/menulis` | Latihan menulis |
+| `/child/demo-rizky/belajar/latihan/membaca` | Latihan membaca |
 
 > Tautan ke `/dashboard` belum ada di navbar. Buka lewat alamat di atas.
 
@@ -227,6 +240,7 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 | `/dashboard/compare` | Orang tua | Perbandingan dua anak |
 | `/screening/[childId]` | Anak | Empat permainan (tanpa menampilkan hasil) |
 | `/child/[childId]` | Anak | Beranda anak |
+| `/child/[childId]/belajar` | Anak | Modul belajar; latihan di bawah `/latihan/*` dan materi di bawah `/materi/*` |
 | `GET /api/cron/notifications` | Cron | Butuh `Authorization: Bearer $CRON_SECRET` |
 
 ## Batasan yang Diakui
@@ -235,7 +249,8 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 - Teks rekomendasi belum ditinjau psikolog. Laporan menampilkan catatan itu selama statusnya `draft`.
 - Daftar tenaga profesional sengaja kosong sampai diverifikasi; sementara itu laporan menampilkan panduan umum mencari bantuan.
 - Alur auth dan Supabase belum diuji terhadap project sungguhan, hanya lewat mock dan Postgres in-process.
-- Versi pertama membutuhkan internet dan belum mencakup masuk anak dengan PIN, modul belajar, serta ekspor/hapus data.
+- Versi pertama membutuhkan internet dan belum mencakup masuk anak dengan PIN serta ekspor/hapus data.
+- Progres modul belajar masih di `localStorage` per anak dan browser. Tabel `learning_sessions`, `quiz_results`, dan `practice_results` belum diisi oleh modul ini; penyambungan ke dasbor orang tua adalah pekerjaan berikutnya.
 
 ## Tim
 

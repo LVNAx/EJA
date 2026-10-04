@@ -9,7 +9,6 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 export const metadata = { title: "Beranda — EJA", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-// Beranda anak. Modul Belajar (Alfred) akan mengisi kartu "Belajar"; sampai itu siap, kartunya ditandai segera hadir.
 // Halaman ini tidak pernah menampilkan tingkat risiko (FR-19).
 export default async function ChildHomePage({ params }: { params: { childId: string } }) {
   let name = "Teman";
@@ -35,10 +34,10 @@ export default async function ChildHomePage({ params }: { params: { childId: str
         <span><span className="block text-xl font-bold">Main permainan</span><span className="text-neutral-600">4 permainan seru</span></span>
       </Link>
 
-      <div className="card flex items-center gap-4 p-6 opacity-70" aria-disabled="true">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-neutral-300 text-white"><BookOpen size={30} aria-hidden="true" /></span>
-        <span><span className="block text-xl font-bold">Belajar</span><span className="text-neutral-600">Segera hadir</span></span>
-      </div>
+      <Link href={ROUTES.learningHome(params.childId)} className="card flex items-center gap-4 p-6 transition-transform hover:-translate-y-1">
+        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-accent-500 text-ink"><BookOpen size={30} aria-hidden="true" /></span>
+        <span><span className="block text-xl font-bold">Belajar</span><span className="text-neutral-600">Membaca, menulis, dan matematika</span></span>
+      </Link>
 
       <Link href="/unlock" className="mx-auto mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-500 hover:text-ink"><Lock size={14} aria-hidden="true" /> Untuk orang tua</Link>
     </main>
