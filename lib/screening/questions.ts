@@ -1,4 +1,5 @@
 import type { IllustrationName } from "@/components/screening/Illustration";
+import { SCREENING_CONFIG } from "./config";
 
 export interface PickOption {
   art: IllustrationName;
@@ -31,7 +32,7 @@ export const phonologicalQuestions: PhonologicalQuestion[] = [
 ];
 
 export const rapidNamingLetters = ["A", "M", "B", "S", "D", "T", "P", "K", "R", "N", "L", "G"] as const;
-export const RAPID_NAMING_MAX_MS = 3000;
+export const RAPID_NAMING_MAX_MS = SCREENING_CONFIG.rapidNaming.maxMs;
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 

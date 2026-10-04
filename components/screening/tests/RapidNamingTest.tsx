@@ -6,10 +6,12 @@ import { QuestionFrame } from "../QuestionFrame";
 import { RAPID_NAMING_MAX_MS, rapidNamingQuestions } from "@/lib/screening/questions";
 import { average, rapidNamingItemScore } from "@/lib/screening/scoring";
 
-export function RapidNamingTest({ onComplete }: { onComplete: (score: number) => void }) {
+export function RapidNamingTest({ onComplete }: { onComplete: (score: number, responseMs: number[]) => void }) {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const scores = useRef<number[]>([]);
+  // Hanya butir yang dijawab; butir yang kehabisan waktu tidak punya waktu respons.
+  const answeredMs = useRef<number[]>([]);
   const startedAt = useRef(0);
   const answered = useRef(false);
   const advanceTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -21,7 +23,7 @@ export function RapidNamingTest({ onComplete }: { onComplete: (score: number) =>
       clearTimeout(limitTimer.current);
       scores.current.push(itemScore);
       advanceTimer.current = setTimeout(() => {
-        if (index + 1 >= rapidNamingQuestions.length) onComplete(average(scores.current));
+        if (index + 1 >= rapidNamingQuestions.length) onComplete(average(scores.current), answeredMs.current);
         else {
           setIndex((n) => n + 1);
           setPicked(null);
@@ -51,6 +53,7 @@ export function RapidNamingTest({ onComplete }: { onComplete: (score: number) =>
     if (answered.current) return;
     answered.current = true;
     const used = performance.now() - startedAt.current;
+    answeredMs.current.push(used);
     setPicked(i);
     finishItem(rapidNamingItemScore(used, i === q.correct, RAPID_NAMING_MAX_MS));
   };

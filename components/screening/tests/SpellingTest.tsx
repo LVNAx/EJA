@@ -5,21 +5,27 @@ import { QuestionFrame } from "../QuestionFrame";
 import { SpeakButton } from "../SpeakButton";
 import { spellingQuestions } from "@/lib/screening/questions";
 
-export function SpellingTest({ onComplete }: { onComplete: (score: number) => void }) {
+export function SpellingTest({ onComplete }: { onComplete: (score: number, responseMs: number[]) => void }) {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const correctCount = useRef(0);
+  const shownAt = useRef(0);
+  const times = useRef<number[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const q = spellingQuestions[index];
 
   useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => {
+    shownAt.current = performance.now();
+  }, [index]);
 
   const choose = (i: number) => {
     if (picked !== null) return;
+    times.current.push(performance.now() - shownAt.current);
     setPicked(i);
     if (i === q.correct) correctCount.current += 1;
     timer.current = setTimeout(() => {
-      if (index + 1 >= spellingQuestions.length) onComplete(correctCount.current / spellingQuestions.length);
+      if (index + 1 >= spellingQuestions.length) onComplete(correctCount.current / spellingQuestions.length, times.current);
       else {
         setIndex(index + 1);
         setPicked(null);

@@ -6,22 +6,29 @@ import { SpeakButton } from "../SpeakButton";
 import { Illustration } from "../Illustration";
 import { phonologicalQuestions } from "@/lib/screening/questions";
 
-export function PhonologicalTest({ onComplete }: { onComplete: (score: number) => void }) {
+export function PhonologicalTest({ onComplete }: { onComplete: (score: number, responseMs: number[]) => void }) {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const correctCount = useRef(0);
+  const shownAt = useRef(0);
+  const times = useRef<number[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const q = phonologicalQuestions[index];
 
   useEffect(() => () => clearTimeout(timer.current), []);
+  // Waktu respons dihitung sejak soal tampil (FR-16).
+  useEffect(() => {
+    shownAt.current = performance.now();
+  }, [index]);
 
   const choose = (i: number) => {
     if (picked !== null) return;
+    times.current.push(performance.now() - shownAt.current);
     setPicked(i);
     if (i === q.correct) correctCount.current += 1;
     timer.current = setTimeout(() => {
       if (index + 1 >= phonologicalQuestions.length) {
-        onComplete(correctCount.current / phonologicalQuestions.length);
+        onComplete(correctCount.current / phonologicalQuestions.length, times.current);
       } else {
         setIndex(index + 1);
         setPicked(null);

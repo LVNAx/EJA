@@ -1,3 +1,5 @@
+import { SCREENING_CONFIG } from "./config";
+
 export type RiskLevel = "low" | "moderate" | "high";
 
 export interface ScreeningScores {
@@ -7,52 +9,68 @@ export interface ScreeningScores {
   digitSpan: number;
 }
 
+export type DimensionKey = keyof ScreeningScores;
+
+export const DIMENSION_KEYS: DimensionKey[] = ["phonological", "rapidNaming", "spelling", "digitSpan"];
+
 export function clamp01(n: number): number {
   if (Number.isNaN(n)) return 0;
   return Math.min(1, Math.max(0, n));
 }
 
-export function calculateRiskScore(scores: ScreeningScores): { riskScore: number; riskLevel: RiskLevel } {
-  const riskScore =
-    scores.phonological * 0.35 +
-    scores.rapidNaming * 0.3 +
-    scores.spelling * 0.2 +
-    scores.digitSpan * 0.15;
+export interface RiskAssessment {
+  riskScore: number;
+  /** Level murni dari skor gabungan, sebelum eskalasi. */
+  baseLevel: RiskLevel;
+  /** Level akhir yang disimpan dan ditampilkan ke orang tua. */
+  riskLevel: RiskLevel;
+  escalated: boolean;
+  /** Dimensi di bawah ambang eskalasi. */
+  sharpDimensions: DimensionKey[];
+}
 
-  const riskLevel: RiskLevel = riskScore > 0.75 ? "low" : riskScore > 0.45 ? "moderate" : "high";
+const ORDER: RiskLevel[] = ["low", "moderate", "high"];
+
+export function levelFromScore(riskScore: number): RiskLevel {
+  const t = SCREENING_CONFIG.levelThresholds;
+  return riskScore > t.low ? "low" : riskScore > t.moderate ? "moderate" : "high";
+}
+
+export function assessRisk(scores: ScreeningScores): RiskAssessment {
+  const w = SCREENING_CONFIG.weights;
+  const riskScore =
+    scores.phonological * w.phonological +
+    scores.rapidNaming * w.rapidNaming +
+    scores.spelling * w.spelling +
+    scores.digitSpan * w.digitSpan;
+
+  const baseLevel = levelFromScore(riskScore);
+  const sharpDimensions = DIMENSION_KEYS.filter((k) => scores[k] < SCREENING_CONFIG.escalationBelow);
+  const raised = ORDER[Math.min(ORDER.indexOf(baseLevel) + 1, ORDER.length - 1)];
+  const riskLevel = sharpDimensions.length > 0 ? raised : baseLevel;
+
+  return { riskScore, baseLevel, riskLevel, escalated: riskLevel !== baseLevel, sharpDimensions };
+}
+
+export function calculateRiskScore(scores: ScreeningScores): { riskScore: number; riskLevel: RiskLevel } {
+  const { riskScore, riskLevel } = assessRisk(scores);
   return { riskScore, riskLevel };
 }
 
-export function rapidNamingItemScore(timeUsedMs: number, isCorrect: boolean, maxMs = 3000): number {
+export function rapidNamingItemScore(timeUsedMs: number, isCorrect: boolean, maxMs: number = SCREENING_CONFIG.rapidNaming.maxMs): number {
+  const w = SCREENING_CONFIG.rapidNaming.speedWeight;
   const speed = Math.max(0, 1 - timeUsedMs / maxMs);
-  return speed * 0.5 + (isCorrect ? 0.5 : 0);
+  return speed * w + (isCorrect ? 1 - w : 0);
 }
 
 export function digitSpanScore(maxSpan: number): number {
-  return clamp01((maxSpan - 2) / 5);
+  const { floor, range } = SCREENING_CONFIG.digitSpan;
+  return clamp01((maxSpan - floor) / range);
 }
 
 export function average(values: number[]): number {
   return values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-export const RISK_COPY: Record<RiskLevel, { label: string; badge: string; text: (name: string) => string }> = {
-  low: {
-    label: "Risiko Rendah",
-    badge: "bg-success-50 text-success-700 border-success",
-    text: (n) => `Kemampuan membaca ${n} berada di rentang normal. Tetap pantau perkembangannya secara berkala.`,
-  },
-  moderate: {
-    label: "Risiko Sedang",
-    badge: "bg-accent-100 text-accent-600 border-accent-300",
-    text: (n) => `Terdapat indikasi kesulitan membaca pada ${n}. Disarankan latihan rutin dan konsultasi ke guru.`,
-  },
-  high: {
-    label: "Risiko Tinggi",
-    badge: "bg-red-50 text-red-600 border-red-200",
-    text: (n) => `Terdapat indikasi kuat disleksia pada ${n}. Sangat disarankan konsultasi dengan psikolog klinis atau dokter anak tumbuh kembang.`,
-  },
-};
-
 export const DISCLAIMER =
-  "Hasil ini bukan diagnosis medis. Hanya psikolog klinis atau dokter anak tumbuh kembang yang dapat menegakkan diagnosis disleksia.";
+  "Hasil ini bukan diagnosis medis. Hanya psikolog klinis atau dokter anak tumbuh kembang yang dapat menegakkan diagnosis disleksia. Gunakan hasil ini sebagai bahan diskusi dengan profesional.";
