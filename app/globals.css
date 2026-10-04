@@ -56,3 +56,19 @@ body {
     @apply glass relative mx-1 inline-flex items-center rounded-[22px] px-5 py-1;
   }
 }
+
+/* Laporan PDF lewat dialog cetak peramban (FR-21): buang latar WebGL, kaca, dan kontrol. */
+@media print {
+  @page { margin: 14mm; }
+  .no-print, .grain, canvas { display: none !important; }
+  body { background: #fff !important; }
+  .card, .glass, .card-solid {
+    background: #fff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d4d4d4 !important;
+    break-inside: avoid;
+  }
+  h1, h2, h3 { break-after: avoid; }
+}

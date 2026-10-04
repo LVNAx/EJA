@@ -53,6 +53,7 @@ export default function CaraKerjaPage() {
             </div>
           ))}
         </div>
+        <p className="mx-auto mt-6 max-w-2xl text-center text-neutral-700">Bila satu dimensi sangat rendah (di bawah 0,30), status dinaikkan satu tingkat supaya kelemahan yang tajam tidak tertutup oleh rata-rata. Orang tua juga mendapat radar empat dimensi, penjelasan, dan saran tindak lanjut di dasbor.</p>
         <p className="mx-auto mt-8 flex max-w-2xl gap-3 rounded-card border border-accent-300 bg-accent-50 p-4 text-sm font-medium">
           <TriangleAlert size={20} className="mt-0.5 shrink-0 text-accent-600" />Hasil ini bukan diagnosis medis. Hanya psikolog klinis atau dokter anak tumbuh kembang yang dapat menegakkan diagnosis disleksia.
         </p>

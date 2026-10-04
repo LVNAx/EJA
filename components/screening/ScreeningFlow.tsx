@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, Ear, Gamepad2, PenLine, Star, Zap, type LucideIcon } from "lucide-react";
+import { Brain, Ear, Gamepad2, PartyPopper, PenLine, Star, Zap, type LucideIcon } from "lucide-react";
 import { AuroraBackground } from "./AuroraBackground";
 import { StepProgress } from "./StepProgress";
 import { PhonologicalTest } from "./tests/PhonologicalTest";
@@ -11,9 +12,11 @@ import { RapidNamingTest } from "./tests/RapidNamingTest";
 import { SpellingTest } from "./tests/SpellingTest";
 import { DigitSpanTest } from "./tests/DigitSpanTest";
 import { saveScreening } from "@/app/screening/[childId]/actions";
-import { calculateRiskScore, type ScreeningScores } from "@/lib/screening/scoring";
+import { assessRisk, type ScreeningScores } from "@/lib/screening/scoring";
+import { evaluateSessionQuality, type ResponseTimings } from "@/lib/screening/quality";
+import { ROUTES } from "@/lib/routes";
 
-type Stage = "intro" | "i1" | "t1" | "i2" | "t2" | "i3" | "t3" | "i4" | "t4" | "saving";
+type Stage = "intro" | "i1" | "t1" | "i2" | "t2" | "i3" | "t3" | "i4" | "t4" | "saving" | "done";
 
 const INTROS: Record<1 | 2 | 3 | 4, { Icon: LucideIcon; title: string; text: string }> = {
   1: { Icon: Ear, title: "Dengarkan Bunyi", text: "Kamu akan mendengar sebuah kata. Pilih gambar yang bunyi awalnya sama." },
@@ -35,33 +38,52 @@ function IconBadge({ Icon }: { Icon: LucideIcon }) {
   );
 }
 
-export function ScreeningFlow({ childId, childName }: { childId: string; childName: string }) {
+/**
+ * `demo` = kunjungan dari halaman depan tanpa akun: hasil ditampilkan lewat sessionStorage.
+ * Pada anak sungguhan, anak TIDAK melihat tingkat risiko (FR-19); hasil hanya ada di dasbor orang tua.
+ */
+export function ScreeningFlow({ childId, childName, demo }: { childId: string; childName: string; demo: boolean }) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("intro");
   const [scores, setScores] = useState<Partial<ScreeningScores>>({});
-  const [error, setError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [timings, setTimings] = useState<ResponseTimings>({ phonological: [], rapidNaming: [], spelling: [] });
+  const [final, setFinal] = useState<ScreeningScores | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const finish = (all: ScreeningScores) => {
+  const save = async (all: ScreeningScores, t: ResponseTimings) => {
+    setSaveError(null);
     setStage("saving");
-    startTransition(async () => {
-      const res = await saveScreening(childId, all);
-      const local = calculateRiskScore(all);
+
+    if (demo) {
+      const { riskScore, riskLevel } = assessRisk(all);
+      const quality = evaluateSessionQuality(t);
       try {
-        sessionStorage.setItem(`eja-screening-${childId}`, JSON.stringify({ scores: all, ...local, saved: res.ok }));
+        sessionStorage.setItem(`eja-screening-${childId}`, JSON.stringify({ scores: all, riskScore, riskLevel, completedAt: new Date().toISOString(), valid: quality.valid, invalidReason: quality.reason }));
       } catch {
         /* sessionStorage tidak tersedia */
       }
-      if (!res.ok) setError(res.error ?? null);
       router.push(`/screening/${childId}/result`);
-    });
+      return;
+    }
+
+    try {
+      const res = await saveScreening(childId, all, t);
+      if (res.ok) setStage("done");
+      else setSaveError(res.error ?? "Tidak diketahui");
+    } catch {
+      setSaveError("Koneksi bermasalah");
+    }
   };
 
-  const done = (key: keyof ScreeningScores, next: Stage) => (value: number) => {
+  const done = (key: keyof ScreeningScores, next: Stage) => (value: number, responseMs?: number[]) => {
     const merged = { ...scores, [key]: value };
     setScores(merged);
-    if (key === "digitSpan") finish(merged as ScreeningScores);
-    else setStage(next);
+    const t = key === "digitSpan" || !responseMs ? timings : { ...timings, [key]: responseMs };
+    setTimings(t);
+    if (key === "digitSpan") {
+      setFinal(merged as ScreeningScores);
+      void save(merged as ScreeningScores, t);
+    } else setStage(next);
   };
 
   const n = stageNumber(stage);
@@ -96,11 +118,28 @@ export function ScreeningFlow({ childId, childName }: { childId: string; childNa
           {stage === "t3" && <SpellingTest onComplete={done("spelling", "i4")} />}
           {stage === "t4" && <DigitSpanTest onComplete={done("digitSpan", "saving")} />}
 
-          {stage === "saving" && (
+          {stage === "saving" && !saveError && (
             <div className="card flex flex-col items-center gap-4 p-8 text-center" role="status">
               <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.4, ease: "linear" }}><Star size={56} className="fill-accent-500 text-accent-500" /></motion.span>
               <p className="text-lg font-semibold">Hebat! Sedang menyimpan hasilmu…</p>
-              {error && <p className="text-sm text-neutral-500">Catatan: hasil belum tersimpan ke server ({error}).</p>}
+            </div>
+          )}
+
+          {stage === "saving" && saveError && (
+            <div className="card flex flex-col items-center gap-4 p-8 text-center" role="alert">
+              <p className="text-lg font-semibold">Hasilmu belum tersimpan.</p>
+              <p className="text-neutral-600">Minta tolong orang dewasa, lalu ketuk tombol di bawah.</p>
+              <p className="text-xs text-neutral-500">Catatan untuk orang tua: {saveError}</p>
+              <button type="button" className="btn-primary w-full" onClick={() => final && void save(final, timings)}>Coba simpan lagi</button>
+            </div>
+          )}
+
+          {stage === "done" && (
+            <div className="card flex flex-col items-center gap-5 p-8 text-center">
+              <IconBadge Icon={PartyPopper} />
+              <h2 className="text-3xl font-bold">Kamu hebat, {childName}!</h2>
+              <p className="text-neutral-600">Semua permainan sudah selesai. Yuk lanjut belajar.</p>
+              <Link href={ROUTES.childHome(childId)} className="btn-primary w-full">Mulai Belajar</Link>
             </div>
           )}
         </motion.div>
