@@ -12,8 +12,8 @@
     "export:review": "vite-node scripts/export-review.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.45.0",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.117.2",
     "bcryptjs": "^2.4.3",
     "framer-motion": "^11.11.0",
     "lucide-react": "^1.51.0",
