@@ -76,7 +76,7 @@ const STORAGE_PREFIX = "eja-progress-v2:";
 
 function storageKey(): string {
   if (typeof window === "undefined") return `${STORAGE_PREFIX}server`;
-  const childId = /^\/child\/([^/]+)\/belajar(?:\/|$)/.exec(
+  const childId = /^\/child\/([^/]+)(?:\/|$)/.exec(
     window.location.pathname,
   )?.[1];
   return `${STORAGE_PREFIX}${childId ?? "demo"}`;

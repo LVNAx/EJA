@@ -83,7 +83,8 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 
 ### Belajar (prototipe)
 
-- Beranda anak membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
+- Dasbor anak menampilkan profil dan avatar, XP, streak aktif, sesi hari ini, lanjutkan aktivitas, lencana, riwayat sesi, pengaturan aksesibilitas, dan pintasan skrining. Matematika tersedia untuk kelas 4–6; IPA dan Pancasila ditandai segera hadir. Data risiko tidak dikirim ke dasbor anak.
+- Beranda modul belajar membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
 - Contoh baca diucapkan per suku kata dengan jeda dan penyorotan; mikrofon opsional.
 - Menulis memakai panduan goresan untuk huruf besar A–Z, huruf kecil a–z, dan angka 0–9. Skor mempertimbangkan jarak, cakupan, jumlah goresan, dan pengulangan garis.
 - Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok, disajikan bertahap dengan kuis singkat.
@@ -176,7 +177,7 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 | `/dashboard/child/demo-nadia` | Dasbor anak (Risiko Rendah, 6 hari tidak aktif) |
 | `/dashboard/child/demo-bima` | Kondisi kosong (belum skrining) |
 | `/dashboard/compare` | Perbandingan dua anak |
-| `/child/demo-rizky` | Beranda anak dengan akses ke modul belajar |
+| `/child/demo-rizky` | Dasbor anak dengan progres lokal dan akses aktivitas |
 | `/child/demo-rizky/belajar` | Beranda modul belajar |
 | `/child/demo-rizky/belajar/latihan/menulis` | Latihan menulis |
 | `/child/demo-rizky/belajar/latihan/membaca` | Latihan membaca |

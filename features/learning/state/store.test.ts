@@ -117,4 +117,24 @@ describe("sesi belajar lokal", () => {
       values.get("eja-progress-v2:demo-nadia"),
     );
   });
+  it("berbagi progres dashboard dengan modul belajar tanpa mencampur anak", async () => {
+    const store = await import("./store");
+    const id = store.ensurePracticeSession("writing", "A", "Menulis A");
+    store.finishPractice(id, ["Menulis A"]);
+    window.location.pathname = "/child/demo-rizky";
+    store.updateSettings({ textSize: "large" });
+    const rizky = JSON.parse(values.get("eja-progress-v2:demo-rizky")!);
+    expect(rizky.totalXp).toBe(15);
+    expect(rizky.sessions[id].completedAt).toBeTruthy();
+    expect(values.has("eja-progress-v2:demo")).toBe(false);
+    window.location.pathname = "/child/demo-nadia";
+    store.updateSettings({ audioRate: 0.7 });
+    const nadia = JSON.parse(values.get("eja-progress-v2:demo-nadia")!);
+    expect(nadia.totalXp).toBe(0);
+    expect(nadia.sessions).toEqual({});
+    window.location.pathname = "/child/demo-rizky/belajar";
+    store.updateSettings({ rewardSound: false });
+    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky")!).settings.textSize).toBe("large");
+  });
+
 });
