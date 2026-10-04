@@ -1,0 +1,22 @@
+import Link from "next/link";
+
+export function LogoMark({ size = 36 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" focusable="false">
+      <rect width="32" height="32" rx="9" fill="#A855F7" />
+      <rect x="9" y="8" width="14" height="3.4" rx="1.7" fill="#fff" />
+      <rect x="9" y="14.3" width="10" height="3.4" rx="1.7" fill="#FF8C61" />
+      <rect x="9" y="20.6" width="14" height="3.4" rx="1.7" fill="#fff" />
+      <rect x="9" y="8" width="3.4" height="16" rx="1.7" fill="#fff" />
+    </svg>
+  );
+}
+
+export function Logo({ light = false }: { light?: boolean }) {
+  return (
+    <Link href="/" className="flex items-center gap-2" aria-label="EJA — beranda">
+      <LogoMark />
+      <span className={`text-xl font-bold tracking-tight ${light ? "text-white" : "text-ink"}`}>EJA</span>
+    </Link>
+  );
+}
