@@ -43,10 +43,10 @@ Proyek ini dibuat untuk **JOINTS UGM 2026**.
 | Modul skrining (4 permainan, skor, mutu sesi) | ✅ Selesai |
 | Rekomendasi klinis + laporan hasil + radar chart | ✅ Selesai, teks masih **draf belum ditinjau psikolog** |
 | Dasbor orang tua | ✅ Selesai, diuji dalam **mode demo** |
-| Auth orang tua, profil anak, kunci dasbor | ⚠️ Ada, **belum diuji terhadap Supabase sungguhan** |
+| Auth orang tua, profil anak, kunci dasbor | ✅ Email + password, callback konfirmasi dan kunci parent; database/RLS diuji pada Supabase, email konfirmasi masih perlu uji manual |
 | Email notifikasi (cron) | ⚠️ Ada, belum pernah mengirim; tanpa kunci hanya *dry-run* |
 | Modul belajar | ✅ Prototipe membaca, menulis A–Z/a–z/0–9, dan 2 materi matematika; progres masih lokal per anak |
-| Masuk anak dengan PIN | 🚧 Belum ada |
+| Masuk anak dengan PIN | ✅ Avatar + PIN, cooldown 5 percobaan, sesi terikat profil dan reset PIN oleh orang tua |
 
 ## Fitur
 
@@ -83,7 +83,8 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 
 ### Belajar (prototipe)
 
-- Beranda anak membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
+- Dasbor anak menampilkan profil dan avatar, XP, streak aktif, sesi hari ini, lanjutkan aktivitas, lencana, riwayat sesi, pengaturan aksesibilitas, dan pintasan skrining. Matematika tersedia untuk kelas 4–6; IPA dan Pancasila ditandai segera hadir. Data risiko tidak dikirim ke dasbor anak.
+- Beranda modul belajar membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
 - Contoh baca diucapkan per suku kata dengan jeda dan penyorotan; mikrofon opsional.
 - Menulis memakai panduan goresan untuk huruf besar A–Z, huruf kecil a–z, dan angka 0–9. Skor mempertimbangkan jarak, cakupan, jumlah goresan, dan pengulangan garis.
 - Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok, disajikan bertahap dengan kuis singkat.
@@ -176,14 +177,18 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 | `/dashboard/child/demo-nadia` | Dasbor anak (Risiko Rendah, 6 hari tidak aktif) |
 | `/dashboard/child/demo-bima` | Kondisi kosong (belum skrining) |
 | `/dashboard/compare` | Perbandingan dua anak |
-| `/child/demo-rizky` | Beranda anak dengan akses ke modul belajar |
+| `/child/demo-rizky` | Dasbor anak dengan progres lokal dan akses aktivitas |
 | `/child/demo-rizky/belajar` | Beranda modul belajar |
 | `/child/demo-rizky/belajar/latihan/menulis` | Latihan menulis |
 | `/child/demo-rizky/belajar/latihan/membaca` | Latihan membaca |
 
 > Tautan ke `/dashboard` belum ada di navbar. Buka lewat alamat di atas.
 
-## Menyambungkan Supabase (opsional)
+## Supabase project Eja
+
+Schema, RPC PIN dan bucket ilustrasi privat sudah terpasang pada project `xnlnzdixcwuichejzgbg`. Jalankan `node scripts/setup-supabase.mjs` lalu `npm run dev` untuk konfigurasi lokal. Ikuti [panduan auth dan routing](docs/supabase-auth-setup.md) untuk pengaturan URL email, alur PIN, schema dan batasan progres lokal.
+
+## Menyambungkan Supabase secara manual (opsional)
 
 1. Salin `.env.example` menjadi `.env.local` lalu isi:
 
@@ -211,6 +216,8 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
    | `0001_screening_sessions.sql` | Sesi skrining |
    | `0002_learning_tracking.sql` | Riwayat belajar, kuis, latihan, validitas sesi |
    | `0003_notifications.sql` | Status baca notifikasi dan log email |
+   | `20261004100821_parent_child_auth_curriculum.sql` | Parent profiles, RPC PIN, kurikulum, progres, cache dan bucket |
+   | `20261004101050_optimize_family_rls.sql` | Optimasi policy RLS dan indeks relasi |
 
    Semuanya aman dijalankan ulang. Opsional untuk pengembangan: `supabase/seed/dev_learning_seed.sql` (jangan di produksi).
 
@@ -232,6 +239,8 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 | `/`, `/cara-kerja`, `/tentang`, `/faq`, `/kontak` | Publik | Halaman informasi |
 | `/privasi`, `/syarat`, `/disclaimer` | Publik | Legal dan disclaimer medis |
 | `/login`, `/daftar` | Orang tua | Masuk dan daftar (persetujuan wajib) |
+| `/auth/callback` | Orang tua | Konfirmasi email PKCE/token hash |
+| `/masuk-anak` | Anak | Pilih avatar dan verifikasi PIN |
 | `/unlock` | Orang tua | Kata sandi ulang untuk membuka dasbor |
 | `/dashboard` | Orang tua | Ringkasan dan notifikasi |
 | `/dashboard/child/new` | Orang tua | Tambah profil anak |
@@ -248,8 +257,8 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 - Belum ada norma atau data berlabel untuk anak Indonesia. Bobot, ambang, dan akurasi deteksi baru dapat dilaporkan setelah pilot dengan psikolog.
 - Teks rekomendasi belum ditinjau psikolog. Laporan menampilkan catatan itu selama statusnya `draft`.
 - Daftar tenaga profesional sengaja kosong sampai diverifikasi; sementara itu laporan menampilkan panduan umum mencari bantuan.
-- Alur auth dan Supabase belum diuji terhadap project sungguhan, hanya lewat mock dan Postgres in-process.
-- Versi pertama membutuhkan internet dan belum mencakup masuk anak dengan PIN serta ekspor/hapus data.
+- Database/RLS dan verifikasi PIN telah diuji pada project Supabase Eja dalam transaksi rollback. Pengiriman email konfirmasi belum diuji end-to-end.
+- Versi pertama membutuhkan internet; ekspor/hapus data akun belum tersedia.
 - Progres modul belajar masih di `localStorage` per anak dan browser. Tabel `learning_sessions`, `quiz_results`, dan `practice_results` belum diisi oleh modul ini; penyambungan ke dasbor orang tua adalah pekerjaan berikutnya.
 
 ## Tim

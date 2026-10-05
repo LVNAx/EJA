@@ -33,7 +33,7 @@ beforeAll(async () => {
     create role anon nologin;
     create role authenticated nologin;
     create schema auth;
-    create table auth.users (id uuid primary key);
+    create table auth.users (id uuid primary key, raw_user_meta_data jsonb default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     grant usage on schema public, auth to anon, authenticated;
     alter default privileges in schema public grant all on tables to anon, authenticated;
@@ -142,6 +142,23 @@ describe("RLS", () => {
 
   it("log email tidak dapat diakses klien sama sekali", async () => {
     await expect(as(A, "select * from public.notification_log")).rejects.toThrow(/permission denied/);
+  });
+
+  it("profil orang tua dan progres hanya terbaca pemilik", async () => {
+    const profiles = await as(A, "select id from public.parent_profiles");
+    expect(profiles.rows).toEqual([{ id: A }]);
+    await as(A, `insert into public.child_learning_progress(child_id,total_xp) values ('${CA}',15)`);
+    expect((await as(B, "select * from public.child_learning_progress")).rows).toHaveLength(0);
+    await expect(as(B, `insert into public.child_learning_progress(child_id) values ('${CA}')`)).rejects.toThrow(/row-level security/);
+  });
+
+  it("tidak dapat memasukkan penghitung PIN lewat Data API", async () => {
+    await expect(as(A, `insert into public.children(parent_id,name,grade,pin_hash,pin_failed_count) values ('${A}','X',1,'hash',0)`)).rejects.toThrow(/permission denied/);
+  });
+
+  it("kuis tidak dapat dipasangkan ke sesi milik profil lain", async () => {
+    const session = await db.query<{id:string}>(`select id from public.learning_sessions where child_id='${CB}' limit 1`);
+    await expect(as(A, `insert into public.quiz_results(session_id,child_id,chunk_index,is_correct) values ('${session.rows[0].id}','${CA}',0,true)`)).rejects.toThrow(/foreign key/);
   });
 
   it("menghapus anak menghapus seluruh datanya (BR-09)", async () => {

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { requireChild } from "@/lib/auth/child-guard";
 import { MAX_SCREENINGS_PER_DAY } from "@/lib/screening/config";
 import { evaluateSessionQuality, sanitizeTimings, type ResponseTimings } from "@/lib/screening/quality";
 import { calculateRiskScore, clamp01, type RiskLevel, type ScreeningScores } from "@/lib/screening/scoring";
@@ -30,6 +31,7 @@ export async function saveScreening(childId: string, raw: ScreeningScores, rawTi
     return { ok: false, error: "Supabase belum dikonfigurasi", valid: quality.valid, riskScore, riskLevel };
   }
 
+  await requireChild(childId);
   const supabase = createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { ok: false, error: "Belum login", riskScore, riskLevel };
