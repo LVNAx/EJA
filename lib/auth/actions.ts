@@ -1,8 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { CHILD_COOKIE, childLoginHref } from "./child-session";
+import { requireParentUnlock } from "./guard";
 import { ROUTES } from "@/lib/routes";
 import { UNLOCK_COOKIE, safeNext, signUnlock, unlockCookieOptions } from "./unlock";
 
@@ -18,6 +21,7 @@ async function grantUnlock(userId: string): Promise<boolean> {
   const token = await signUnlock(userId);
   if (!token) return false;
   cookies().set(UNLOCK_COOKIE, token, unlockCookieOptions());
+  cookies().delete(CHILD_COOKIE);
   return true;
 }
 
@@ -32,16 +36,19 @@ export async function signUp(_prev: FormState, form: FormData): Promise<FormStat
   const password = String(form.get("password") ?? "");
   const consent = form.get("consent") === "on";
 
-  if (name.length < 2) return { error: "Isi nama Anda." };
+  if (name.length < 2 || name.length > 80) return { error: "Isi nama Anda." };
   if (!EMAIL_RE.test(email)) return { error: "Alamat email belum benar." };
   if (password.length < 8) return { error: "Kata sandi minimal 8 karakter." };
   if (!consent) return { error: "Anda perlu menyetujui kebijakan privasi dan persetujuan orang tua untuk melanjutkan." };
 
   const supabase = createClient();
+  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+  const origin = configuredOrigin || (process.env.NODE_ENV !== "production" ? headers().get("origin") : null);
+  if (!origin) return { error: "Alamat situs belum dikonfigurasi (NEXT_PUBLIC_SITE_URL)." };
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: name, consent_at: new Date().toISOString(), consent_scope: "privasi+persetujuan-orang-tua" } },
+    options: { emailRedirectTo: `${origin}/auth/callback`, data: { full_name: name, consent_at: new Date().toISOString(), consent_scope: "privasi+persetujuan-orang-tua" } },
   });
 
   const exists = data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
@@ -78,6 +85,7 @@ export async function signIn(_prev: FormState, form: FormData): Promise<FormStat
 export async function signOut(): Promise<void> {
   if (isSupabaseConfigured()) await createClient().auth.signOut();
   cookies().delete(UNLOCK_COOKIE);
+  cookies().delete(CHILD_COOKIE);
   redirect("/");
 }
 
@@ -108,10 +116,14 @@ export async function lockForChild(childId: string, kind: "screening" | "home"):
     const supabase = createClient();
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) redirect(ROUTES.login);
+    await requireParentUnlock(auth.user.id);
     // RLS: hanya anak milik orang tua ini yang terbaca.
     const { data: child } = await supabase.from("children").select("id").eq("id", childId).maybeSingle();
     if (!child) redirect(ROUTES.dashboard);
     cookies().delete(UNLOCK_COOKIE);
+    cookies().delete(CHILD_COOKIE);
+    const next = kind === "screening" ? ROUTES.screening(childId) : ROUTES.childHome(childId);
+    redirect(childLoginHref(childId, next));
   }
   redirect(kind === "screening" ? ROUTES.screening(childId) : ROUTES.childHome(childId));
 }

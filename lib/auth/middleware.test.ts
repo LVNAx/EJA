@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { CHILD_COOKIE, signChildSession } from "./child-session";
 import { UNLOCK_COOKIE, signUnlock } from "./unlock";
 
 // Menguji keputusan middleware dengan sesi Supabase yang di-mock: siapa yang boleh membuka /dashboard.
-const state: { user: { id: string } | null } = { user: null };
-vi.mock("@/lib/supabase/middleware", () => ({ updateSession: async () => ({ response: () => NextResponse.next(), user: state.user }) }));
+const state: { user: { id: string } | null; refresh: boolean } = { user: null, refresh: false };
+vi.mock("@/lib/supabase/middleware", () => ({ updateSession: async () => ({ response: () => { const r = NextResponse.next(); if (state.refresh) {r.cookies.set("sb-refreshed", "new-session");r.headers.set("cache-control", "private, no-store");} return r; }, user: state.user }) }));
 
 const { middleware } = await import("../../middleware");
 
@@ -16,6 +17,7 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://supabase.test");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "anon");
   state.user = null;
+  state.refresh = false;
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -55,15 +57,28 @@ describe("middleware: kunci dasbor orang tua", () => {
     expect(r.headers.get("set-cookie")?.toLowerCase()).toContain("httponly");
   });
 
-  it("area anak dan skrining tidak butuh buka-kunci", async () => {
+  it("redirect mempertahankan refresh cookies dan no-store", async () => {
     state.user = { id: U };
-    expect((await middleware(req("/child/abc"))).headers.get("location")).toBeNull();
-    expect((await middleware(req("/screening/abc"))).headers.get("location")).toBeNull();
+    state.refresh = true;
+    const r = await middleware(req("/dashboard"));
+    expect(r.headers.get("set-cookie")).toContain("sb-refreshed");
+    expect(r.headers.get("cache-control")).toBe("private, no-store");
+  });
+
+  it("area anak membutuhkan PIN dan tidak mengizinkan pindah profil", async () => {
+    state.user = { id: U };
+    const id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    expect(location(await middleware(req(`/child/${id}`)))).toContain("/masuk-anak?");
+    const token = await signChildSession(U, id);
+    expect(location(await middleware(req(`/child/${id}/belajar`, `${CHILD_COOKIE}=${token}`)))).toBeNull();
+    expect(location(await middleware(req(`/screening/${id}`, `${CHILD_COOKIE}=${token}`)))).toBeNull();
+    expect(location(await middleware(req("/child/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", `${CHILD_COOKIE}=${token}`)))).toContain("/masuk-anak?");
+    expect(location(await middleware(req("/screening/demo")))).toBeNull();
   });
 
   it("sudah login: /login dan /daftar diarahkan ke dasbor", async () => {
     state.user = { id: U };
-    expect(location(await middleware(req("/login")))).toBe("/dashboard");
-    expect(location(await middleware(req("/daftar")))).toBe("/dashboard");
+    expect(location(await middleware(req("/login")))).toBe("/masuk-anak");
+    expect(location(await middleware(req("/daftar")))).toBe("/masuk-anak");
   });
 });

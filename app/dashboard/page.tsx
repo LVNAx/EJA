@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Scale, UserRound } from "lucide-react";
+import { LogIn, Plus, Scale, UserRound } from "lucide-react";
 import { ChildCard } from "@/components/dashboard/ChildCard";
 import { NotificationList } from "@/components/dashboard/NotificationList";
 import { DisclaimerNote } from "@/components/dashboard/DisclaimerNote";
@@ -20,6 +20,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-neutral-600">Hasil skrining dan kemajuan belajar semua anak Anda.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {children.length > 0 && <Link href={ROUTES.childLogin} className="btn-primary !px-6 !py-3 !text-base"><LogIn size={18} aria-hidden="true" /> Login anak</Link>}
           {canCompare && <Link href="/dashboard/compare" className="btn-ghost"><Scale size={18} aria-hidden="true" /> Bandingkan</Link>}
           <Link href={ROUTES.addChild} className="btn-ghost"><Plus size={18} aria-hidden="true" /> Tambah anak</Link>
         </div>

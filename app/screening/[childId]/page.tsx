@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Moon } from "lucide-react";
 import { AuroraBackground } from "@/components/screening/AuroraBackground";
 import { ScreeningFlow } from "@/components/screening/ScreeningFlow";
 import { startOfDayIso } from "@/lib/dashboard/metrics";
 import { MAX_SCREENINGS_PER_DAY } from "@/lib/screening/config";
 import { ROUTES, DEMO_CHILD_ID } from "@/lib/routes";
+import { requireChild } from "@/lib/auth/child-guard";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export default async function ScreeningPage({ params }: { params: { childId: string } }) {
@@ -15,11 +15,7 @@ export default async function ScreeningPage({ params }: { params: { childId: str
 
   if (!demo) {
     const supabase = createClient();
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) redirect(`${ROUTES.login}?next=${encodeURIComponent(ROUTES.screening(params.childId))}`);
-    // RLS: hanya anak milik parent yang login yang bisa terbaca.
-    const { data: child } = await supabase.from("children").select("name").eq("id", params.childId).maybeSingle();
-    if (!child) redirect(ROUTES.dashboard);
+    const child = await requireChild(params.childId);
     childName = child.name;
 
     // BR-04: batas sesi per hari. Teks untuk anak tidak menyinggung hasil atau status.

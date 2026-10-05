@@ -1,7 +1,10 @@
 node_modules
 .next
 .env*.local
+.env.local.backup-*
 .env
 next-env.d.ts
 *.tsbuildinfo
 .next-build
+
+supabase/.temp/

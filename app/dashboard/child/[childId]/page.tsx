@@ -1,3 +1,4 @@
+import { ResetChildPinForm } from "@/components/auth/ChildLoginForm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ClipboardList } from "lucide-react";
@@ -15,7 +16,7 @@ import { formatDateLong } from "@/lib/format";
 import { ROUTES } from "@/lib/routes";
 
 export default async function ChildDashboardPage({ params }: { params: { childId: string } }) {
-  const { child, now, readIds } = await loadChild(params.childId);
+  const { child, now, readIds, demo } = await loadChild(params.childId);
   if (!child) notFound();
 
   const { profile } = child;
@@ -82,6 +83,7 @@ export default async function ChildDashboardPage({ params }: { params: { childId
       <div id="kuis" className="scroll-mt-6"><QuizResults data={child} now={now} /></div>
       <div id="praktik" className="scroll-mt-6"><PracticeResults data={child} /></div>
 
+      {!demo && <ResetChildPinForm childId={params.childId} />}
       <DisclaimerNote />
     </div>
   );
