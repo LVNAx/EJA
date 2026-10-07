@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/features/learning/components/icons";
+import { findIndonesianVoice } from "@/features/learning/indonesian-voice";
 import { spokenSyllables, type ReadingItem } from "./data";
 
 export function SyllableAudio({
@@ -13,7 +14,9 @@ export function SyllableAudio({
 }) {
   const [playing, setPlaying] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [unavailable, setUnavailable] = useState(false);
+  const [unavailable, setUnavailable] = useState<"browser" | "voice" | null>(
+    null,
+  );
   const voices = useRef<SpeechSynthesisVoice[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const run = useRef(0);
@@ -52,13 +55,21 @@ export function SyllableAudio({
       !("speechSynthesis" in window) ||
       typeof SpeechSynthesisUtterance === "undefined"
     ) {
-      setUnavailable(true);
+      setUnavailable("browser");
       return;
     }
     stop();
+    const voice = findIndonesianVoice([
+      ...window.speechSynthesis.getVoices(),
+      ...voices.current,
+    ]);
+    if (!voice) {
+      setUnavailable("voice");
+      return;
+    }
     const currentRun = run.current;
     setPlaying(true);
-    setUnavailable(false);
+    setUnavailable(null);
 
     const speakPart = (index: number) => {
       if (currentRun !== run.current) return;
@@ -71,14 +82,7 @@ export function SyllableAudio({
       const utterance = new SpeechSynthesisUtterance(part.text);
       utterance.lang = "id-ID";
       utterance.rate = rate;
-      const voice =
-        window.speechSynthesis
-          .getVoices()
-          .find((candidate) => candidate.lang.toLowerCase().startsWith("id")) ??
-        voices.current.find((candidate) =>
-          candidate.lang.toLowerCase().startsWith("id"),
-        );
-      if (voice) utterance.voice = voice;
+      utterance.voice = voice;
       utterance.onstart = () => {
         if (currentRun === run.current) setActiveIndex(index);
       };
@@ -93,7 +97,7 @@ export function SyllableAudio({
         if (currentRun !== run.current) return;
         setPlaying(false);
         setActiveIndex(null);
-        setUnavailable(true);
+        setUnavailable("browser");
       };
       window.speechSynthesis.speak(utterance);
     };
@@ -145,10 +149,16 @@ export function SyllableAudio({
           <Icon name="stop" size={17} /> Hentikan
         </button>
       </div>
-      {unavailable && (
+      {unavailable === "browser" && (
         <p className="assistive-note">
           Audio tidak tersedia di browser ini. Suku katanya tetap bisa dibaca
           satu per satu.
+        </p>
+      )}
+      {unavailable === "voice" && (
+        <p className="assistive-note">
+          Suara Bahasa Indonesia belum tersedia di perangkat ini. Aktifkan suara
+          Indonesia di pengaturan perangkat, lalu coba lagi.
         </p>
       )}
     </>

@@ -123,6 +123,10 @@ export default function ReadingPage() {
         );
       } else if (event.error === "no-speech") {
         setMessage("Belum ada suara yang terdengar. Coba lagi jika kamu mau.");
+      } else if (event.error === "language-not-supported") {
+        setMessage(
+          "Pengenalan suara Bahasa Indonesia belum didukung browser ini. Kamu tetap bisa membaca sendiri.",
+        );
       } else {
         setMessage(
           "Mikrofon belum bisa digunakan. Lanjutkan dengan membaca sendiri.",
@@ -249,7 +253,7 @@ export default function ReadingPage() {
               )}
               {recording && (
                 <p className="recording-status" role="status">
-                  ● Sedang mendengarkan...
+                  ● Sedang mendengarkan dalam Bahasa Indonesia...
                 </p>
               )}
               {transcript && (
