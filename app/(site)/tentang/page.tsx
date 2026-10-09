@@ -3,6 +3,7 @@ import { ArrowUpRight, ClipboardCheck, FlaskConical, GraduationCap, Stethoscope 
 import { PageHeader, Section } from "@/components/site/Section";
 import { Reveal } from "@/components/site/Reveal";
 import { BASIS, LIMITATIONS, REFERENCES } from "@/lib/references";
+import { TeamPhoto } from "@/components/site/TeamPhoto";
 
 export const metadata: Metadata = { title: "Tentang — EJA", description: "Misi, landasan ilmiah, dan tim di balik EJA." };
 
@@ -139,18 +140,7 @@ export default function TentangPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TEAM.map((t) => (
             <div key={t.name} className="card overflow-hidden p-0 text-center">
-              <div className="relative h-48 w-full bg-brand-50">
-                {/* Letakkan foto di public/team/<nama>.jpg */}
-                <img
-                  src={t.photo}
-                  alt={t.name}
-                  className="h-full w-full object-cover object-top"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                />
-                <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-brand-300 [img+&]:hidden">
-                  {t.name[0]}
-                </span>
-              </div>
+              <TeamPhoto src={t.photo} name={t.name} />
               <div className="p-4">
                 <h3 className="text-lg font-bold">{t.name}</h3>
                 <p className="text-sm text-neutral-600">{t.role}</p>
