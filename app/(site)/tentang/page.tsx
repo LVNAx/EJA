@@ -17,7 +17,7 @@ const TEAM = [
   { name: "Arkan", role: "Frontend Developer", photo: "/team/arkan.jpg" },
   { name: "Attar", role: "Backend Developer", photo: "/team/attar.jpg" },
   { name: "Alfredo", role: "Backend Developer", photo: "/team/alfredo.jpg" },
-  { name: "Gagah", role: "DevOps Engineer", photo: "/team/gagah.jpg" },
+  { name: "Gagah", role: "DevOps", photo: "/team/gagah.jpg" },
 ];
 
 const GROUP_ICON = { skrining: ClipboardCheck, rekomendasi: Stethoscope, belajar: GraduationCap } as const;
