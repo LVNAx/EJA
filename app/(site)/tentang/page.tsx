@@ -14,10 +14,10 @@ const PRINCIPLES = [
 ];
 
 const TEAM = [
-  { name: "Arkan", role: "Full-stack Developer", photo: "/team/arkan.jpg" },
-  { name: "Attar", role: "Full-stack Developer", photo: "/team/attar.jpg" },
-  { name: "Alfredo", role: "Full-stack Developer", photo: "/team/alfredo.jpg" },
-  { name: "Gagah", role: "Full-stack Developer", photo: "/team/gagah.jpg" },
+  { name: "Arkan", role: "Frontend Developer", photo: "/team/arkan.jpg" },
+  { name: "Attar", role: "Backend Developer", photo: "/team/attar.jpg" },
+  { name: "Alfredo", role: "Backend Developer", photo: "/team/alfredo.jpg" },
+  { name: "Gagah", role: "DevOps Engineer", photo: "/team/gagah.jpg" },
 ];
 
 const GROUP_ICON = { skrining: ClipboardCheck, rekomendasi: Stethoscope, belajar: GraduationCap } as const;

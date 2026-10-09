@@ -17,7 +17,8 @@ export function TeamPhoto({ src, name }: { src: string; name: string }) {
     <img
       src={src}
       alt={name}
-      className="h-48 w-full object-cover object-top"
+      className="h-48 w-full object-cover"
+      style={{ objectPosition: "center 25%" }}
       onError={() => setFailed(true)}
     />
   );
