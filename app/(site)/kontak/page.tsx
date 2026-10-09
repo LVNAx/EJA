@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Kontak — EJA" };
 export default function KontakPage() {
   return (
     <>
-      <PageHeader eyebrow="Kontak" title="Punya pertanyaan atau masukan?" subtitle="EJA sedang dikembangkan untuk JOINTS UGM 2026." />
+      <PageHeader eyebrow="Kontak" title="Punya pertanyaan atau masukan?" subtitle="Ada pertanyaan? Kami senang mendengar masukan kamu." />
       <div className="mx-auto mb-20 grid max-w-3xl gap-5 px-4 sm:grid-cols-2">
         <a href="https://github.com/LVNAx/EJA" target="_blank" rel="noopener noreferrer" className="card p-6 transition-transform hover:-translate-y-1">
           <Code2 size={32} className="text-brand-600" />

@@ -29,7 +29,7 @@ export function Footer() {
           ))}
         </div>
       </div>
-      <p className="mx-auto mt-10 max-w-6xl border-t border-white/10 px-4 pt-6 text-sm text-white/50">© 2026 EJA · Dibuat untuk JOINTS UGM 2026</p>
+      <p className="mx-auto mt-10 max-w-6xl border-t border-white/10 px-4 pt-6 text-sm text-white/50">© 2026 EJA · All rights reserved by EJA Team</p>
     </footer>
   );
 }

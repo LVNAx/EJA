@@ -7,10 +7,10 @@ import { BASIS, LIMITATIONS, REFERENCES } from "@/lib/references";
 export const metadata: Metadata = { title: "Tentang — EJA", description: "Misi, landasan ilmiah, dan tim di balik EJA." };
 
 const TEAM = [
-  { name: "Acan", role: "Full-stack lead, modul skrining" },
-  { name: "Attar", role: "Autentikasi dan infrastruktur" },
-  { name: "Gagah", role: "Rekomendasi dan dashboard orang tua" },
-  { name: "Alfred", role: "Modul belajar" },
+  { name: "Arkan", role: "Full-stack Developer", photo: "/team/arkan.jpg" },
+  { name: "Attar", role: "Full-stack Developer", photo: "/team/attar.jpg" },
+  { name: "Alfredo", role: "Full-stack Developer", photo: "/team/alfredo.jpg" },
+  { name: "Gagah", role: "Full-stack Developer", photo: "/team/gagah.jpg" },
 ];
 
 const GROUP_ICON = { skrining: ClipboardCheck, rekomendasi: Stethoscope, belajar: GraduationCap } as const;
@@ -129,13 +129,26 @@ export default function TentangPage() {
         </Reveal>
       </section>
 
-      <Section title="Tim" highlight="EJA" subtitle="Dibuat untuk JOINTS UGM 2026.">
+      <Section title="Tim" highlight="EJA" subtitle="Empat developer yang membangun EJA dari nol.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {TEAM.map((t) => (
-            <div key={t.name} className="card p-5 text-center">
-              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-xl font-bold text-white">{t.name[0]}</span>
-              <h3 className="mt-3 text-lg font-bold">{t.name}</h3>
-              <p className="text-sm text-neutral-600">{t.role}</p>
+            <div key={t.name} className="card overflow-hidden p-0 text-center">
+              <div className="relative h-48 w-full bg-brand-50">
+                {/* Letakkan foto di public/team/<nama>.jpg */}
+                <img
+                  src={t.photo}
+                  alt={t.name}
+                  className="h-full w-full object-cover object-top"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+                <span className="absolute inset-0 flex items-center justify-center text-5xl font-bold text-brand-300 [img+&]:hidden">
+                  {t.name[0]}
+                </span>
+              </div>
+              <div className="p-4">
+                <h3 className="text-lg font-bold">{t.name}</h3>
+                <p className="text-sm text-neutral-600">{t.role}</p>
+              </div>
             </div>
           ))}
         </div>
