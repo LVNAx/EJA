@@ -6,7 +6,7 @@ import type { ChildProfile } from "@/lib/dashboard/types";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Masuk Anak — EJA", robots: { index: false } };
+export const metadata = { title: "Masuk Anak", robots: { index: false } };
 export default async function ChildLoginPage({ searchParams }: { searchParams: { child?: string; next?: string } }) {
   const demo = !isSupabaseConfigured();
   let children: ChildProfile[];

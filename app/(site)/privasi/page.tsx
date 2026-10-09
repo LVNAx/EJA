@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader, Prose } from "@/components/site/Section";
 
-export const metadata: Metadata = { title: "Kebijakan Privasi — EJA" };
+export const metadata: Metadata = { title: "Kebijakan Privasi" };
 
 export default function PrivasiPage() {
   return (

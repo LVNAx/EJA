@@ -5,7 +5,7 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "EJA — Ekosistem Belajar Disleksia",
+  title: { default: "EJA - AI-Driven Early Detection and Personalized Learning for Children with Dyslexia", template: "%s - EJA" },
   description: "Skrining dan belajar yang ramah anak disleksia untuk siswa SD Indonesia.",
 };
 

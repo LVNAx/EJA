@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/AuthForms";
 import { safeNext } from "@/lib/auth/unlock";
 
-export const metadata: Metadata = { title: "Masuk — EJA" };
+export const metadata: Metadata = { title: "Masuk" };
 
 export default function LoginPage({ searchParams }: { searchParams: { next?: string; error?: string } }) {
   return (

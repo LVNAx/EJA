@@ -4,7 +4,7 @@ import { Brain, Ear, PenLine, TriangleAlert, Zap } from "lucide-react";
 import { PageHeader, Section } from "@/components/site/Section";
 import { Reveal } from "@/components/site/Reveal";
 
-export const metadata: Metadata = { title: "Cara Kerja — EJA", description: "Bagaimana skrining EJA bekerja, dan bagaimana hasilnya dibaca." };
+export const metadata: Metadata = { title: "Cara Kerja", description: "Bagaimana skrining EJA bekerja, dan bagaimana hasilnya dibaca." };
 
 const TESTS = [
   { Icon: Ear, name: "Dengarkan & Pilih", skill: "Kesadaran bunyi (35%)", text: "Anak mendengar sebuah kata, lalu memilih gambar yang bunyi awalnya sama. Ini mengukur kemampuan memproses bunyi bahasa, prediktor terkuat kesulitan membaca." },

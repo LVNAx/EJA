@@ -46,7 +46,7 @@ export function ScreeningReport({ data, actions }: { data: ReportData; actions?:
     <div className="flex flex-col gap-6">
       {/* Kop khusus cetak/PDF */}
       <div className="hidden print:block">
-        <p className="text-lg font-bold">EJA — Laporan Skrining</p>
+        <p className="text-lg font-bold">EJA - Laporan Skrining</p>
         <p className="text-sm">{name}{data.grade ? `, kelas ${data.grade}` : ""} · Tanggal tes: {formatDateLong(data.completedAt)}</p>
       </div>
 

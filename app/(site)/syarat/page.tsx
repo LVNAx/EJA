@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader, Prose } from "@/components/site/Section";
 
-export const metadata: Metadata = { title: "Syarat & Ketentuan — EJA" };
+export const metadata: Metadata = { title: "Syarat & Ketentuan" };
 
 export default function SyaratPage() {
   return (

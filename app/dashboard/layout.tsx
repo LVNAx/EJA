@@ -7,7 +7,7 @@ import { signOut } from "@/lib/auth/actions";
 import { ROUTES } from "@/lib/routes";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Dasbor Orang Tua — EJA", robots: { index: false } };
+export const metadata: Metadata = { title: "Dasbor Orang Tua", robots: { index: false } };
 
 // Data pribadi anak dan bergantung pada sesi: jangan di-cache.
 export const dynamic = "force-dynamic";

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/site/Section";
 import { Reveal } from "@/components/site/Reveal";
 
-export const metadata: Metadata = { title: "Tentang — EJA", description: "Misi, dasar ilmiah, dan tim di balik EJA." };
+export const metadata: Metadata = { title: "Tentang", description: "Misi, dasar ilmiah, dan tim di balik EJA." };
 
 const PRINCIPLES = [
   { title: "Structured Literacy", text: "Belajar bertahap, eksplisit, dan melibatkan lebih dari satu indra. Kami memecah materi menjadi unit kecil, satu konsep per langkah." },

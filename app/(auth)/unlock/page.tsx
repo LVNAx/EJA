@@ -4,7 +4,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { UnlockForm } from "@/components/auth/AuthForms";
 import { safeNext } from "@/lib/auth/unlock";
 
-export const metadata: Metadata = { title: "Buka dasbor — EJA", robots: { index: false } };
+export const metadata: Metadata = { title: "Buka dasbor", robots: { index: false } };
 
 export default function UnlockPage({ searchParams }: { searchParams: { next?: string } }) {
   return (

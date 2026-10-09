@@ -26,7 +26,7 @@ if (existsSync(target)) {
   const backup = target + ".backup-" + Date.now();
   writeFileSync(backup, readFileSync(target), { mode: 0o600, flag: "wx" });
 }
-writeFileSync(target, "# EJA local environment — jangan commit atau bagikan file ini.\n" +
+writeFileSync(target, "# EJA local environment - jangan commit atau bagikan file ini.\n" +
   [...values].map(([name, value]) => name + "=" + value).join("\n") + "\n", { mode: 0o600 });
 console.log("Konfigurasi lokal EJA tersimpan. Jalankan npm run dev, lalu buka http://localhost:3000/daftar.");
 

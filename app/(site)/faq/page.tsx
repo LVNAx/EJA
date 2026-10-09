@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/site/Section";
 
-export const metadata: Metadata = { title: "FAQ — EJA", description: "Pertanyaan yang sering diajukan tentang EJA." };
+export const metadata: Metadata = { title: "FAQ", description: "Pertanyaan yang sering diajukan tentang EJA." };
 
 const FAQ = [
   { q: "Apakah hasil EJA sama dengan diagnosis disleksia?", a: "Tidak. EJA adalah skrining awal. Hanya psikolog klinis atau dokter anak tumbuh kembang yang dapat menegakkan diagnosis. Gunakan hasilnya sebagai bahan diskusi dengan profesional." },
