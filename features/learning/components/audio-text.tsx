@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "./icons";
+import { findIndonesianVoice } from "@/features/learning/indonesian-voice";
 
 export function AudioText({ text, rate }: { text: string; rate: number }) {
-  const [unavailable, setUnavailable] = useState(false);
+  const [unavailable, setUnavailable] = useState<"browser" | "voice" | null>(
+    null,
+  );
   const [playing, setPlaying] = useState(false);
   const [charIndex, setCharIndex] = useState<number | null>(null);
   const [hasBoundary, setHasBoundary] = useState(false);
@@ -29,20 +32,27 @@ export function AudioText({ text, rate }: { text: string; rate: number }) {
     setHasBoundary(false);
   }, []);
   const speak = () => {
-    if (!("speechSynthesis" in window)) {
-      setUnavailable(true);
+    if (
+      !("speechSynthesis" in window) ||
+      typeof SpeechSynthesisUtterance === "undefined"
+    ) {
+      setUnavailable("browser");
       return;
     }
     stop();
+    const voice = findIndonesianVoice([
+      ...window.speechSynthesis.getVoices(),
+      ...voices.current,
+    ]);
+    if (!voice) {
+      setUnavailable("voice");
+      return;
+    }
+    setUnavailable(null);
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "id-ID";
     utterance.rate = rate;
-    const voice =
-      window.speechSynthesis
-        .getVoices()
-        .find((item) => item.lang.toLowerCase().startsWith("id")) ??
-      voices.current.find((item) => item.lang.toLowerCase().startsWith("id"));
-    if (voice) utterance.voice = voice;
+    utterance.voice = voice;
     utterance.onstart = () => setPlaying(true);
     utterance.onend = () => {
       setPlaying(false);
@@ -102,10 +112,16 @@ export function AudioText({ text, rate }: { text: string; rate: number }) {
           <Icon name="stop" size={17} /> Hentikan
         </button>
       </div>
-      {unavailable && (
+      {unavailable === "browser" && (
         <p className="assistive-note">
           Audio tidak tersedia di browser ini. Kamu tetap bisa membaca
           materinya.
+        </p>
+      )}
+      {unavailable === "voice" && (
+        <p className="assistive-note">
+          Suara Bahasa Indonesia belum tersedia di perangkat ini. Aktifkan suara
+          Indonesia di pengaturan perangkat, lalu coba lagi.
         </p>
       )}
     </>
