@@ -16,7 +16,7 @@ export interface SaveResult {
   riskLevel: RiskLevel;
 }
 
-// Skor dan mutu sesi dihitung ulang di server — klien hanya mengirim skor per tes dan waktu respons.
+// Skor dan mutu sesi dihitung ulang di server - klien hanya mengirim skor per tes dan waktu respons.
 export async function saveScreening(childId: string, raw: ScreeningScores, rawTimings?: Partial<ResponseTimings>): Promise<SaveResult> {
   const scores: ScreeningScores = {
     phonological: clamp01(raw.phonological),

@@ -4,7 +4,7 @@ import { Notice } from "@/components/site/Notice";
 import { PageHeader, Prose } from "@/components/site/Section";
 import { DISCLAIMER } from "@/lib/screening/scoring";
 
-export const metadata: Metadata = { title: "Disclaimer Medis — EJA" };
+export const metadata: Metadata = { title: "Disclaimer Medis" };
 
 export default function DisclaimerPage() {
   return (

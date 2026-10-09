@@ -4,7 +4,7 @@ import "@/features/learning/styles/base.css";
 import "@/features/learning/styles/literacy.css";
 import "@/features/learning/styles/brand.css";
 
-export const metadata = { title: "Belajar — EJA", robots: { index: false } };
+export const metadata = { title: "Belajar", robots: { index: false } };
 
 export default async function LearningLayout({
   children,

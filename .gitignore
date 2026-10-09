@@ -8,3 +8,7 @@ next-env.d.ts
 .next-build
 
 supabase/.temp/
+
+# video promosi (Remotion): dibuat dan disimpan lokal, tidak masuk repo
+/video/
+.next-video

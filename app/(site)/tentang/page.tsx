@@ -6,6 +6,12 @@ import { BASIS, LIMITATIONS, REFERENCES } from "@/lib/references";
 
 export const metadata: Metadata = { title: "Tentang — EJA", description: "Misi, landasan ilmiah, dan tim di balik EJA." };
 
+const PRINCIPLES = [
+  { title: "Structured Literacy", text: "Belajar bertahap, eksplisit, dan melibatkan lebih dari satu indra. Kami memecah materi menjadi unit kecil, satu konsep per langkah." },
+  { title: "Dual Coding", text: "Informasi yang disimpan dalam bentuk kata dan gambar lebih mudah diingat. Setiap konsep disertai ilustrasi yang relevan." },
+  { title: "Testing Effect", text: "Mengingat kembali lebih kuat daripada membaca ulang. Karena itu ada satu pertanyaan singkat setelah tiap potongan materi." },
+];
+
 const TEAM = [
   { name: "Arkan", role: "Full-stack Developer", photo: "/team/arkan.jpg" },
   { name: "Attar", role: "Full-stack Developer", photo: "/team/attar.jpg" },

@@ -3,7 +3,7 @@ import { assessRisk, calculateRiskScore, digitSpanScore, type ScreeningScores } 
 
 const scores = (p: number, r: number, s: number, d: number): ScreeningScores => ({ phonological: p, rapidNaming: r, spelling: s, digitSpan: d });
 
-describe("assessRisk — bobot dan ambang (BR-01, BR-02)", () => {
+describe("assessRisk - bobot dan ambang (BR-01, BR-02)", () => {
   it("memakai bobot 0,35 / 0,30 / 0,20 / 0,15", () => {
     expect(assessRisk(scores(1, 0, 0, 0)).riskScore).toBeCloseTo(0.35);
     expect(assessRisk(scores(0, 1, 0, 0)).riskScore).toBeCloseTo(0.3);
@@ -26,7 +26,7 @@ describe("assessRisk — bobot dan ambang (BR-01, BR-02)", () => {
   });
 });
 
-describe("assessRisk — eskalasi satu dimensi sangat rendah (BR-02)", () => {
+describe("assessRisk - eskalasi satu dimensi sangat rendah (BR-02)", () => {
   it("Rendah naik jadi Sedang bila satu dimensi < 0,30", () => {
     // 0,35*1 + 0,30*1 + 0,20*1 + 0,15*0,2 = 0,88 (Rendah), memori 0,2 < 0,3
     const a = assessRisk(scores(1, 1, 1, 0.2));

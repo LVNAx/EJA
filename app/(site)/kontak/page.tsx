@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Code2, Stethoscope } from "lucide-react";
 import { PageHeader } from "@/components/site/Section";
 
-export const metadata: Metadata = { title: "Kontak — EJA" };
+export const metadata: Metadata = { title: "Kontak" };
 
 export default function KontakPage() {
   return (
