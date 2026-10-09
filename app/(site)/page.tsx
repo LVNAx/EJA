@@ -64,6 +64,20 @@ export default function HomePage() {
         </div>
         <p className="mt-5 text-sm text-neutral-500">Hasil skrining bukan diagnosis medis.</p>
 
+        <Reveal className="mt-12 w-full max-w-3xl">
+          <div className="card overflow-hidden p-0">
+            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+              <iframe
+                className="absolute inset-0 h-full w-full"
+                src="https://www.youtube.com/embed/6jGuyJDMsUI"
+                title="EJA Demo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal className="mt-16 w-full">
           <ProductPreview />
         </Reveal>
