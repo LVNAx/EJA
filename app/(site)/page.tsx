@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BookOpenText, ClipboardCheck, Languages, SearchX, Stethoscope, BookOpen, Check, X, Zap } from "lucide-react";
-import { ProductPreview } from "@/components/site/ProductPreview";
+import { YoutubeEmbed } from "@/components/site/YoutubeEmbed";
 import { Reveal } from "@/components/site/Reveal";
 import { Section } from "@/components/site/Section";
 import { Showcase } from "@/components/site/Showcase";
@@ -65,21 +65,7 @@ export default function HomePage() {
         <p className="mt-5 text-sm text-neutral-500">Hasil skrining bukan diagnosis medis.</p>
 
         <Reveal className="mt-12 w-full max-w-3xl">
-          <div className="card overflow-hidden p-0">
-            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-              <iframe
-                className="absolute inset-0 h-full w-full"
-                src="https://www.youtube.com/embed/6jGuyJDMsUI"
-                title="EJA Demo"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </Reveal>
-
-        <Reveal className="mt-16 w-full">
-          <ProductPreview />
+          <YoutubeEmbed id="6jGuyJDMsUI" />
         </Reveal>
       </section>
 
