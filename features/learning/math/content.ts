@@ -26,6 +26,7 @@ export const quizSchema = z
     options: z.array(z.string().min(1)).min(2).max(4),
     answerIndex: z.number().int().min(0),
     explanation: z.string().min(1),
+    hints: z.array(z.string().min(1)).min(2).max(3).optional(),
   })
   .refine(
     (quiz) => quiz.answerIndex < quiz.options.length,
@@ -39,6 +40,8 @@ export const chunkSchema = z
     text: z.string().min(1),
     visual: visualSchema,
     readingTarget: z.string().optional(),
+    spokenText: z.string().optional(),
+    example: z.string().optional(),
     quiz: quizSchema.optional(),
   })
   .refine(
@@ -74,7 +77,9 @@ const rawLessons = [
         id: "utuh",
         type: "concept",
         title: "Satu benda utuh",
-        text: "Ini satu lingkaran utuh. Belum ada bagian yang dipisah.",
+        text: "Ini satu kue utuh. Kuenya belum dipotong.",
+        example:
+          "Bayangkan satu kue bundar di piring. Seluruh kue itu adalah satu benda utuh.",
         visual: { type: "fraction", parts: 1, selected: 1, label: "1 utuh" },
         readingTarget: "utuh",
       },
@@ -82,7 +87,9 @@ const rawLessons = [
         id: "empat",
         type: "concept",
         title: "Empat bagian sama",
-        text: "Sekarang lingkaran dibagi menjadi empat bagian sama besar.",
+        text: "Kue ini dipotong menjadi empat bagian sama besar.",
+        example:
+          "Ada empat teman yang berbagi satu kue. Setiap teman mendapat potongan yang sama besar.",
         visual: {
           type: "fraction",
           parts: 4,
@@ -95,7 +102,9 @@ const rawLessons = [
         id: "satu-bagian",
         type: "concept",
         title: "Pilih satu bagian",
-        text: "Satu dari empat bagian diberi warna. Bagian itu disebut seperempat.",
+        text: "Satu dari empat potongan diberi warna. Ini disebut seperempat.",
+        example:
+          "Dari empat potongan yang sama besar, kamu mengambil satu. Bagianmu adalah seperempat kue.",
         visual: {
           type: "fraction",
           parts: 4,
@@ -108,7 +117,11 @@ const rawLessons = [
         id: "simbol",
         type: "concept",
         title: "Ditulis ¼",
-        text: "Seperempat ditulis ¼. Angka atas berarti bagian dipilih, angka bawah jumlah bagian.",
+        text: "Seperempat ditulis ¼. Ada satu potongan berwarna dari empat potongan.",
+        spokenText:
+          "Seperempat. Ada satu potongan berwarna dari empat potongan yang sama besar.",
+        example:
+          "Pada satu per empat, angka satu menunjukkan potongan yang dipilih. Angka empat menunjukkan jumlah semua potongan.",
         visual: {
           type: "fraction",
           parts: 4,
@@ -121,7 +134,9 @@ const rawLessons = [
         id: "kuis",
         type: "quiz",
         title: "Yuk, coba!",
-        text: "Perhatikan bagian yang berwarna. Berapa bagian yang dipilih?",
+        text: "Lihat potongan yang berwarna. Pilih pecahan yang sesuai.",
+        spokenText:
+          "Pecahan mana yang sesuai dengan gambar? Pilihan A, seperempat. Pilihan B, setengah. Pilihan C, tiga per empat.",
         visual: {
           type: "fraction",
           parts: 4,
@@ -132,7 +147,12 @@ const rawLessons = [
           question: "Pecahan mana yang sesuai dengan gambar?",
           options: ["¼", "½", "¾"],
           answerIndex: 0,
-          explanation: "Betul! Satu dari empat bagian adalah ¼.",
+          explanation:
+            "Betul. Satu dari empat potongan sama besar disebut seperempat.",
+          hints: [
+            "Hitung semua potongannya. Ada empat potongan sama besar.",
+            "Ada satu potongan berwarna. Satu dari empat ditulis ¼, dibaca seperempat.",
+          ],
         },
       },
     ],
@@ -151,6 +171,8 @@ const rawLessons = [
         type: "concept",
         title: "Lihat kelompoknya",
         text: "Ada tiga kelompok bintang. Setiap kelompok berisi dua bintang.",
+        example:
+          "Bayangkan tiga piring. Pada setiap piring ada dua kue. Setiap piring adalah satu kelompok.",
         visual: { type: "grouped_objects", groups: 3, perGroup: 2, emoji: "★" },
         readingTarget: "kelompok",
       },
@@ -159,13 +181,19 @@ const rawLessons = [
         type: "concept",
         title: "Jumlahkan semuanya",
         text: "Dua ditambah dua ditambah dua sama dengan enam.",
+        example:
+          "Mulai dari dua bintang. Tambah dua menjadi empat. Tambah dua lagi menjadi enam.",
         visual: { type: "grouped_objects", groups: 3, perGroup: 2, emoji: "★" },
       },
       {
         id: "kali",
         type: "concept",
         title: "Cara singkat",
-        text: "Tiga kelompok berisi dua benda ditulis 3 × 2. Hasilnya enam.",
+        text: "Tiga kelompok, masing-masing dua bintang, ditulis 3 × 2.",
+        spokenText:
+          "Tiga kelompok, masing-masing dua bintang. Dibaca tiga kali dua. Jumlahnya enam bintang.",
+        example:
+          "Tiga kali dua berarti ada tiga kelompok yang masing-masing berisi dua benda. Kamu bisa menghitungnya dengan dua tambah dua tambah dua.",
         visual: { type: "grouped_objects", groups: 3, perGroup: 2, emoji: "★" },
         readingTarget: "perkalian",
       },
@@ -173,13 +201,20 @@ const rawLessons = [
         id: "kuis",
         type: "quiz",
         title: "Giliranmu!",
-        text: "Hitung semua bintang di dalam kelompok.",
+        text: "Hitung bintang pada kedua kelompok.",
+        spokenText:
+          "Dua kelompok berisi tiga bintang. Berapa semuanya? Pilihan A, lima. Pilihan B, enam. Pilihan C, delapan.",
         visual: { type: "grouped_objects", groups: 2, perGroup: 3, emoji: "★" },
         quiz: {
           question: "Dua kelompok berisi tiga bintang. Berapa semuanya?",
           options: ["5", "6", "8"],
           answerIndex: 1,
-          explanation: "Ya! Tiga ditambah tiga sama dengan enam.",
+          explanation:
+            "Betul. Tiga bintang ditambah tiga bintang menjadi enam bintang.",
+          hints: [
+            "Hitung bintang pada kelompok pertama. Ada tiga bintang.",
+            "Kelompok pertama berisi tiga, kelompok kedua juga tiga. Tiga ditambah tiga sama dengan enam.",
+          ],
         },
       },
     ],

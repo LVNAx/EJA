@@ -82,7 +82,7 @@
 }
 
 .learning-root .brand-name {
-  font-size: 22px;
+  font-size: calc(22px * var(--text-scale, 1));
   letter-spacing: -0.04em;
   font-weight: 800;
 }
@@ -543,10 +543,262 @@
 @media (max-width: 390px) {
   .learning-root .brand-name {
     display: inline;
-    font-size: 18px;
+    font-size: calc(18px * var(--text-scale, 1));
   }
 
   .learning-root .header-xp {
     padding: 7px;
   }
+}
+
+/* Shared reading scale and accessible controls. */
+.learning-root .site-shell {
+  --text-scale: 1;
+  font-size: calc(18px * var(--text-scale));
+}
+.learning-root .site-shell.text-large {
+  --text-scale: 1.22;
+}
+.learning-root .site-shell[data-reduce-motion="true"] *,
+.learning-root .site-shell[data-reduce-motion="true"] *::before,
+.learning-root .site-shell[data-reduce-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.learning-root .modal-backdrop {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  color: inherit;
+  padding: 20px;
+}
+.learning-root .modal-backdrop:not([open]) {
+  display: none;
+}
+.learning-root .modal-backdrop::backdrop {
+  background: #1e0a4560;
+}
+.learning-root .settings-panel {
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+.learning-root .skip-learning {
+  position: fixed;
+  top: 4px;
+  left: 12px;
+  z-index: 60;
+  transform: translateY(-150%);
+  background: white;
+  border: 2px solid #7e22ce;
+  border-radius: 12px;
+  padding: 12px;
+}
+.learning-root .skip-learning:focus {
+  transform: none;
+}
+.learning-root .storage-warning {
+  margin: 12px 16px;
+  padding: 16px;
+  border: 2px solid #c2410c;
+  border-radius: 16px;
+  background: #fff7ed;
+  color: #7c2d12;
+}
+.learning-root .character-select {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  font-weight: 700;
+}
+.learning-root .character-select select {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 14px;
+  border: 2px solid #d8b4fe;
+  border-radius: 16px;
+  background: white;
+  color: #1e0a45;
+  font-size: calc(24px * var(--text-scale));
+}
+.learning-root .all-characters {
+  margin-top: 16px;
+}
+.learning-root .all-characters summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  color: #7e22ce;
+  font-weight: 700;
+}
+.learning-root .all-characters .character-grid {
+  margin-top: 12px;
+}
+.learning-root .learning-help {
+  margin-top: 24px;
+}
+.learning-root .help-card {
+  margin-top: 16px;
+  padding: 20px;
+  background: #faf5ff;
+  border: 2px solid #d8b4fe;
+  border-radius: 20px;
+  line-height: 1.7;
+}
+.learning-root .help-card ol {
+  padding-left: 24px;
+}
+.learning-root .help-card li + li {
+  margin-top: 12px;
+}
+.learning-root .help-card .audio-row {
+  margin-top: 16px;
+}
+.learning-root .trace-controls {
+  flex-wrap: wrap;
+}
+.learning-root .header-xp {
+  font-size: calc(12px * var(--text-scale));
+  white-space: nowrap;
+}
+@media (max-width: 650px) {
+  .learning-root .header-xp {
+    display: none;
+  }
+  .learning-root .writing-picker {
+    position: static;
+    padding: 20px;
+  }
+  .learning-root .reading-options {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 8px;
+  }
+  .learning-root .reading-option {
+    flex: 0 0 170px;
+  }
+  .learning-root .lesson-actions {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .learning-root .lesson-actions .save-hint {
+    order: 3;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.learning-root .reading-list,
+.learning-root .reading-workspace {
+  min-width: 0;
+}
+.learning-root .skip-learning:not(:focus) {
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+@media (max-width: 850px) {
+  .learning-root .reading-layout,
+  .learning-root .writing-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Large text must reflow on narrow screens instead of widening the page. */
+.learning-root .button,
+.learning-root .audio-button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.learning-root .icon-button,
+.learning-root .top-nav a {
+  min-width: 44px;
+  min-height: 44px;
+}
+.learning-root .lesson-topline {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.learning-root .lesson-topline > *,
+.learning-root .lesson-layout > * {
+  min-width: 0;
+}
+.learning-root .lesson-text,
+.learning-root .help-card {
+  overflow-wrap: anywhere;
+}
+.learning-root .spoken-word {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.learning-root .fraction-svg {
+  max-width: 100%;
+  height: auto;
+}
+.learning-root .settings-panel {
+  min-width: 0;
+}
+.learning-root .settings-heading > div {
+  min-width: 0;
+  flex: 1;
+}
+.learning-root .settings-heading h2 {
+  overflow-wrap: anywhere;
+}
+.learning-root .settings-heading .eyebrow {
+  display: block;
+}
+.learning-root .settings-heading .icon-button {
+  flex: none;
+}
+@media (max-width: 850px) {
+  .learning-root .lesson-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .learning-root .setting-row {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .learning-root .setting-row select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .learning-root .settings-panel {
+    padding: 18px;
+  }
+}
+/* Keep demo navigation available inside every learning activity. */
+.learning-root .demo-learning-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: calc(14px * var(--text-scale));
+}
+.learning-root .demo-learning-bar p {
+  margin: 0;
+  color: #625872;
+}
+.learning-root .demo-learning-bar a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #7e22ce;
+  font-weight: 700;
+  text-decoration: underline;
 }

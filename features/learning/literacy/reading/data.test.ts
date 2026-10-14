@@ -1,3 +1,4 @@
+import { matchesReading } from "./data";
 import { describe, expect, it } from "vitest";
 import { normalizeSpeech, readingItems, spokenSyllables } from "./data";
 
@@ -28,5 +29,22 @@ describe("latihan membaca", () => {
         );
       }
     }
+  });
+});
+
+describe("ucapan per suku kata", () => {
+  it("menerima kata utuh dan suku kata dengan jeda", () => {
+    const item = readingItems.find((entry) => entry.id === "pecahan")!;
+    expect(matchesReading("pecahan", item)).toBe(true);
+    expect(matchesReading("PE - CA - HAN.", item)).toBe(true);
+    expect(matchesReading("pecah", item)).toBe(false);
+    expect(matchesReading("", item)).toBe(false);
+  });
+  it("mempertahankan batas kata pada kalimat", () => {
+    const item = readingItems.find((entry) => entry.id === "kue-empat")!;
+    expect(
+      matchesReading("sa tu kue di ba gi menjadi em pat bagian", item),
+    ).toBe(true);
+    expect(matchesReading("satukuedibagimenjadiempatbagian", item)).toBe(false);
   });
 });

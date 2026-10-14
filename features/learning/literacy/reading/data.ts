@@ -90,3 +90,20 @@ export function normalizeSpeech(text: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+/** Accept syllable-by-syllable speech without collapsing sentence word boundaries. */
+export function matchesReading(transcript: string, item: ReadingItem): boolean {
+  const heard = normalizeSpeech(transcript);
+  const words = item.words.map((word) => [
+    normalizeSpeech(word.text),
+    word.syllables.map(normalizeSpeech).join(" "),
+  ]);
+  const forms = words.reduce<string[]>(
+    (prefixes, variants) =>
+      prefixes.flatMap((prefix) =>
+        [...new Set(variants)].map((word) => `${prefix} ${word}`.trim()),
+      ),
+    [""],
+  );
+  return forms.includes(heard);
+}

@@ -5,8 +5,14 @@ import { QuestionFrame } from "../QuestionFrame";
 import { SpeakButton } from "../SpeakButton";
 import { spellingQuestions } from "@/lib/screening/questions";
 
-export function SpellingTest({ onComplete }: { onComplete: (score: number, responseMs: number[]) => void }) {
+export function SpellingTest({
+  onComplete,
+}: {
+  onComplete: (score: number, responseMs: number[]) => void;
+}) {
   const [index, setIndex] = useState(0);
+  const [heard, setHeard] = useState(false);
+  const [audioError, setAudioError] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
   const correctCount = useRef(0);
   const shownAt = useRef(0);
@@ -20,29 +26,70 @@ export function SpellingTest({ onComplete }: { onComplete: (score: number, respo
   }, [index]);
 
   const choose = (i: number) => {
-    if (picked !== null) return;
+    if (picked !== null || !heard) return;
     times.current.push(performance.now() - shownAt.current);
     setPicked(i);
     if (i === q.correct) correctCount.current += 1;
     timer.current = setTimeout(() => {
-      if (index + 1 >= spellingQuestions.length) onComplete(correctCount.current / spellingQuestions.length, times.current);
+      if (index + 1 >= spellingQuestions.length)
+        onComplete(
+          correctCount.current / spellingQuestions.length,
+          times.current,
+        );
       else {
         setIndex(index + 1);
         setPicked(null);
+        setHeard(false);
+        setAudioError(false);
       }
     }, 900);
   };
 
   return (
-    <QuestionFrame questionKey={index} index={index} total={spellingQuestions.length} label="Dengarkan, lalu pilih tulisan yang benar">
+    <QuestionFrame
+      questionKey={index}
+      index={index}
+      total={spellingQuestions.length}
+      label="Dengarkan, lalu pilih tulisan yang benar"
+    >
       <div className="card flex flex-col items-center gap-6 p-6">
-        <p className="text-center text-lg font-semibold">Tulisan mana yang benar?</p>
-        <SpeakButton text={q.audio} fallbackLabel={q.options[q.correct]} />
+        <p className="text-center text-lg font-semibold">
+          Tulisan mana yang benar?
+        </p>
+        <SpeakButton
+          key={index}
+          text={q.audio}
+          onHeard={() => {
+            setHeard(true);
+            setAudioError(false);
+          }}
+          onUnavailable={() => setAudioError(true)}
+        />
+        {!heard && (
+          <p role="status" className="text-center text-sm text-neutral-600">
+            {audioError
+              ? "Pilihan dibuka setelah kata berhasil dibacakan. Kamu boleh kembali dan melanjutkan nanti."
+              : "Dengarkan kata sampai selesai, lalu pilih jawaban."}
+          </p>
+        )}
         <div className="grid w-full grid-cols-1 gap-3">
           {q.options.map((o, i) => {
-            const state = picked === null ? "" : i === q.correct ? "correct" : i === picked ? "wrong" : "";
+            const state =
+              picked === null
+                ? ""
+                : i === q.correct
+                  ? "correct"
+                  : i === picked
+                    ? "wrong"
+                    : "";
             return (
-              <button key={`${o}-${i}`} type="button" disabled={picked !== null} onClick={() => choose(i)} className={`option-card !min-h-[64px] !text-2xl tracking-widest ${state}`}>
+              <button
+                key={`${o}-${i}`}
+                type="button"
+                disabled={picked !== null || !heard}
+                onClick={() => choose(i)}
+                className={`option-card !min-h-[64px] !text-2xl tracking-widest ${state}`}
+              >
                 {o}
               </button>
             );

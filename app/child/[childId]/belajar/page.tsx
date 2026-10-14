@@ -33,11 +33,17 @@ export default function HomePage() {
             yang jelas.
           </p>
           <div className="hero-buttons">
-            <Link className="button button-primary" href={learningHref(childId, "/literasi")}>
+            <Link
+              className="button button-primary"
+              href={learningHref(childId, "/literasi")}
+            >
               <Icon name="book" /> Mulai Membaca & Menulis{" "}
               <Icon name="arrow" size={18} />
             </Link>
-            <Link className="button button-light" href={learningHref(childId, "/matematika")}>
+            <Link
+              className="button button-light"
+              href={learningHref(childId, "/matematika")}
+            >
               Lihat Matematika
             </Link>
           </div>
@@ -71,7 +77,7 @@ export default function HomePage() {
           </span>
           <div>
             <strong>{state.totalXp}</strong>
-            <span>Total XP</span>
+            <span>Bintang terkumpul</span>
           </div>
         </div>
         <div className="stat-card streak-stat">
@@ -100,10 +106,16 @@ export default function HomePage() {
               angka.
             </p>
             <div className="module-actions">
-              <Link href={learningHref(childId, "/latihan/membaca")} className="button button-primary">
+              <Link
+                href={learningHref(childId, "/latihan/membaca")}
+                className="button button-primary"
+              >
                 Latihan Membaca <Icon name="arrow" size={17} />
               </Link>
-              <Link href={learningHref(childId, "/latihan/menulis")} className="button button-outline">
+              <Link
+                href={learningHref(childId, "/latihan/menulis")}
+                className="button button-outline"
+              >
                 Latihan Menulis
               </Link>
             </div>
@@ -117,7 +129,10 @@ export default function HomePage() {
               kuis.
             </p>
             <div className="module-actions">
-              <Link href={learningHref(childId, "/matematika")} className="button button-primary">
+              <Link
+                href={learningHref(childId, "/matematika")}
+                className="button button-primary"
+              >
                 Lihat Materi <Icon name="arrow" size={17} />
               </Link>
               {resumeLesson && (
@@ -139,7 +154,10 @@ export default function HomePage() {
             <span className="section-kicker">MATEMATIKA</span>
             <h2>Materi yang tersedia</h2>
           </div>
-          <Link href={learningHref(childId, "/matematika")} className="text-link">
+          <Link
+            href={learningHref(childId, "/matematika")}
+            className="text-link"
+          >
             Lihat semua materi <Icon name="arrow" size={17} />
           </Link>
         </div>
@@ -152,7 +170,12 @@ export default function HomePage() {
                 ? "Selesai"
                 : "Belum mulai";
             return (
-              <LessonCard key={lesson.id} lesson={lesson} status={status} childId={childId} />
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                status={status}
+                childId={childId}
+              />
             );
           })}
         </div>

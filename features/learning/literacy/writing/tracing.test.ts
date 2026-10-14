@@ -1,3 +1,4 @@
+import { guideLabelPositions } from "./guide-labels";
 import { describe, expect, it } from "vitest";
 import {
   evaluateTrace,
@@ -76,5 +77,22 @@ describe("evaluasi jalur tulisan", () => {
     const result = evaluateTrace(template, scribble);
     expect(result.outsidePenalty).toBeGreaterThan(0.2);
     expect(result.score).toBeLessThan(50);
+  });
+});
+
+describe("nomor panduan goresan", () => {
+  it("nomor awal tetap terpisah pada seluruh huruf dan angka", () => {
+    for (const character of writingCharacters) {
+      const labels = guideLabelPositions(writingTemplates[character]);
+      for (let index = 0; index < labels.length; index++)
+        for (let next = index + 1; next < labels.length; next++)
+          expect(
+            Math.hypot(
+              labels[index].x - labels[next].x,
+              labels[index].y - labels[next].y,
+            ),
+            character,
+          ).toBeGreaterThanOrEqual(36);
+    }
   });
 });

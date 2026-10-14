@@ -72,7 +72,9 @@ describe("sesi belajar lokal", () => {
     const secondId = store.ensureLessonSession("pecahan-dasar");
     expect(secondId).not.toBe(sessionId);
     store.advanceLesson("pecahan-dasar", "utuh", 1);
-    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky") ?? "{}").totalXp).toBe(40);
+    expect(
+      JSON.parse(values.get("eja-progress-v2:demo-rizky") ?? "{}").totalXp,
+    ).toBe(40);
   });
 
   it("memberi reward membaca dan menulis sekali per sesi", async () => {
@@ -82,11 +84,13 @@ describe("sesi belajar lokal", () => {
       "pecahan",
       "Membaca pecahan",
     );
+    store.recordReadingAttempt(reading, true);
     expect(store.finishPractice(reading, ["Membaca kata pecahan"])).toBe(
       reading,
     );
     expect(store.finishPractice(reading, ["Membaca kata pecahan"])).toBeNull();
     const writing = store.ensurePracticeSession("writing", "A", "Menulis A");
+    store.recordWritingAttempt(writing, 85);
     expect(store.finishPractice(writing, ["Menelusuri A"])).toBe(writing);
     const saved = JSON.parse(values.get("eja-progress-v2:demo-rizky") ?? "{}");
     expect(saved.totalXp).toBe(30);
@@ -100,7 +104,9 @@ describe("sesi belajar lokal", () => {
     );
     expect(another).not.toBe(reading);
     store.finishPractice(another, ["Membaca kata pecahan"]);
-    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky") ?? "{}").totalXp).toBe(45);
+    expect(
+      JSON.parse(values.get("eja-progress-v2:demo-rizky") ?? "{}").totalXp,
+    ).toBe(30);
   });
 
   it("memisahkan progres tiap anak pada browser yang sama", async () => {
@@ -124,7 +130,7 @@ describe("sesi belajar lokal", () => {
     window.location.pathname = "/child/demo-rizky";
     store.updateSettings({ textSize: "large" });
     const rizky = JSON.parse(values.get("eja-progress-v2:demo-rizky")!);
-    expect(rizky.totalXp).toBe(15);
+    expect(rizky.totalXp).toBe(5);
     expect(rizky.sessions[id].completedAt).toBeTruthy();
     expect(values.has("eja-progress-v2:demo")).toBe(false);
     window.location.pathname = "/child/demo-nadia";
@@ -134,7 +140,104 @@ describe("sesi belajar lokal", () => {
     expect(nadia.sessions).toEqual({});
     window.location.pathname = "/child/demo-rizky/belajar";
     store.updateSettings({ rewardSound: false });
-    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky")!).settings.textSize).toBe("large");
+    expect(
+      JSON.parse(values.get("eja-progress-v2:demo-rizky")!).settings.textSize,
+    ).toBe("large");
   });
+});
 
+describe("catatan bantuan dan kelanjutan latihan", () => {
+  it("kuis yang belum dijawab tidak dapat dianggap selesai", async () => {
+    const store = await import("./store");
+    store.ensureLessonSession("pecahan-dasar");
+    expect(store.finishLesson("pecahan-dasar", "kuis")).toBeNull();
+    store.recordQuizAnswer("pecahan-dasar", "kuis", 1);
+    expect(store.finishLesson("pecahan-dasar", "kuis")).toBeNull();
+    store.recordHelp(
+      Object.keys(
+        JSON.parse(values.get("eja-progress-v2:demo-rizky")!).sessions,
+      )[0],
+      "hint",
+    );
+    store.recordQuizAnswer("pecahan-dasar", "kuis", 0);
+    expect(store.finishLesson("pecahan-dasar", "kuis")).toBeTruthy();
+    const state = JSON.parse(values.get("eja-progress-v2:demo-rizky")!);
+    const evidence = Object.values(state.evidence)[0] as {
+      quizzes: {
+        kuis: {
+          attempts: number;
+          incorrect: number;
+          solved: boolean;
+          firstTryCorrect: boolean;
+        };
+      };
+      hints: number;
+    };
+    expect(evidence.quizzes.kuis).toEqual({
+      attempts: 2,
+      incorrect: 1,
+      solved: true,
+      firstTryCorrect: false,
+    });
+    expect(evidence.hints).toBe(1);
+  });
+  it("mengulang materi tidak menghapus keberhasilan sebelumnya", async () => {
+    const store = await import("./store");
+    store.ensureLessonSession("pecahan-dasar");
+    store.recordQuizAnswer("pecahan-dasar", "kuis", 0);
+    store.finishLesson("pecahan-dasar", "kuis");
+    store.ensureLessonSession("pecahan-dasar");
+    expect(
+      JSON.parse(values.get("eja-progress-v2:demo-rizky")!).lessons[
+        "pecahan-dasar"
+      ].completed,
+    ).toBe(true);
+  });
+  it("memulihkan pilihan huruf dan bacaan pada kunjungan berikutnya", async () => {
+    const store = await import("./store");
+    store.selectPractice("writing", "z");
+    store.selectPractice("reading", "kelompok");
+    vi.resetModules();
+    const next = await import("./store");
+    next.updateSettings({ textSize: "large" });
+    expect(
+      JSON.parse(values.get("eja-progress-v2:demo-rizky")!).selections,
+    ).toEqual({ reading: "kelompok", writing: "z" });
+  });
+  it("membedakan usaha dari kemiripan tulisan dan mencegah pengumpulan bintang berulang", async () => {
+    const store = await import("./store");
+    const first = store.ensurePracticeSession("writing", "A", "Menulis A");
+    store.recordWritingAttempt(first, 0);
+    store.finishPractice(first, ["Mencoba A"]);
+    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky")!).totalXp).toBe(
+      5,
+    );
+    const second = store.ensurePracticeSession("writing", "A", "Menulis A");
+    store.recordWritingAttempt(second, 85);
+    store.finishPractice(second, ["Berlatih A"]);
+    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky")!).totalXp).toBe(
+      15,
+    );
+    const third = store.ensurePracticeSession("writing", "A", "Menulis A");
+    store.recordWritingAttempt(third, 90);
+    store.finishPractice(third, ["Mengulang A"]);
+    expect(JSON.parse(values.get("eja-progress-v2:demo-rizky")!).totalXp).toBe(
+      15,
+    );
+  });
+});
+
+it("memulihkan pilihan dari sesi aktif pada data versi dua yang lama", async () => {
+  const store = await import("./store");
+  const id = store.ensurePracticeSession("writing", "B", "Menulis B");
+  const old = JSON.parse(values.get("eja-progress-v2:demo-rizky")!);
+  delete old.selections;
+  delete old.evidence;
+  values.set("eja-progress-v2:demo-rizky", JSON.stringify(old));
+  vi.resetModules();
+  const next = await import("./store");
+  next.updateSettings({ textSize: "large" });
+  const saved = JSON.parse(values.get("eja-progress-v2:demo-rizky")!);
+  expect(saved.selections.writing).toBe("B");
+  expect(saved.activePractices.writing).toBe(id);
 });

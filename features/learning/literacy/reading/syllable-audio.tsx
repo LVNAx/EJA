@@ -2,106 +2,75 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/features/learning/components/icons";
-import { findIndonesianVoice } from "@/features/learning/indonesian-voice";
+import {
+  speakIndonesian,
+  speechMessage,
+  stopSpeaking,
+} from "@/lib/speech/indonesian";
 import { spokenSyllables, type ReadingItem } from "./data";
 
 export function SyllableAudio({
   item,
   rate,
+  onListen,
 }: {
   item: ReadingItem;
   rate: number;
+  onListen?: () => void;
 }) {
   const [playing, setPlaying] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [unavailable, setUnavailable] = useState<"browser" | "voice" | null>(
     null,
   );
-  const voices = useRef<SpeechSynthesisVoice[]>([]);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const run = useRef(0);
   const sequence = spokenSyllables(item.words);
-
   const stop = useCallback(() => {
     run.current += 1;
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = null;
-    if (typeof window !== "undefined" && "speechSynthesis" in window)
-      window.speechSynthesis.cancel();
+    stopSpeaking();
     setPlaying(false);
     setActiveIndex(null);
   }, []);
-
-  useEffect(() => {
-    if (!("speechSynthesis" in window)) return;
-    const refreshVoices = () => {
-      voices.current = window.speechSynthesis.getVoices();
-    };
-    refreshVoices();
-    window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
-    return () => {
+  useEffect(
+    () => () => {
       run.current += 1;
-      if (timer.current) clearTimeout(timer.current);
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.removeEventListener(
-        "voiceschanged",
-        refreshVoices,
-      );
-    };
-  }, []);
+      stopSpeaking();
+    },
+    [item.id],
+  );
 
-  const speak = () => {
-    if (
-      !("speechSynthesis" in window) ||
-      typeof SpeechSynthesisUtterance === "undefined"
-    ) {
-      setUnavailable("browser");
-      return;
-    }
+  const speak = async () => {
     stop();
-    const voice = findIndonesianVoice([
-      ...window.speechSynthesis.getVoices(),
-      ...voices.current,
-    ]);
-    if (!voice) {
-      setUnavailable("voice");
-      return;
-    }
-    const currentRun = run.current;
+    const current = run.current;
     setPlaying(true);
     setUnavailable(null);
-
-    const speakPart = (index: number) => {
-      if (currentRun !== run.current) return;
-      if (index >= sequence.length) {
+    for (let index = 0; index < sequence.length; index++) {
+      if (run.current !== current) return;
+      const part = sequence[index];
+      const result = await speakIndonesian(part.text, {
+        rate,
+        onStart: () => {
+          if (run.current !== current) return;
+          setActiveIndex(index);
+          if (index === 0) onListen?.();
+        },
+      });
+      if (run.current !== current) return;
+      if (result !== "spoken") {
         setPlaying(false);
         setActiveIndex(null);
+        if (result !== "cancelled")
+          setUnavailable(result === "missing-voice" ? "voice" : "browser");
         return;
       }
-      const part = sequence[index];
-      const utterance = new SpeechSynthesisUtterance(part.text);
-      utterance.lang = "id-ID";
-      utterance.rate = rate;
-      utterance.voice = voice;
-      utterance.onstart = () => {
-        if (currentRun === run.current) setActiveIndex(index);
-      };
-      utterance.onend = () => {
-        if (currentRun !== run.current) return;
-        timer.current = setTimeout(
-          () => speakPart(index + 1),
-          part.lastInWord ? 350 : 240,
-        );
-      };
-      utterance.onerror = () => {
-        if (currentRun !== run.current) return;
-        setPlaying(false);
-        setActiveIndex(null);
-        setUnavailable("browser");
-      };
-      window.speechSynthesis.speak(utterance);
-    };
-    speakPart(0);
+      await new Promise((resolve) =>
+        setTimeout(resolve, part.lastInWord ? 350 : 240),
+      );
+    }
+    if (run.current === current) {
+      setPlaying(false);
+      setActiveIndex(null);
+    }
   };
 
   let syllableIndex = 0;
@@ -138,7 +107,11 @@ export function SyllableAudio({
         </div>
       </div>
       <div className="audio-row">
-        <button className="audio-button" onClick={speak}>
+        <button
+          className="audio-button"
+          onClick={() => void speak()}
+          disabled={playing}
+        >
           <Icon name="sound" size={20} /> Dengarkan per suku kata
         </button>
         <button
@@ -156,10 +129,7 @@ export function SyllableAudio({
         </p>
       )}
       {unavailable === "voice" && (
-        <p className="assistive-note">
-          Suara Bahasa Indonesia belum tersedia di perangkat ini. Aktifkan suara
-          Indonesia di pengaturan perangkat, lalu coba lagi.
-        </p>
+        <p className="assistive-note">{speechMessage}</p>
       )}
     </>
   );

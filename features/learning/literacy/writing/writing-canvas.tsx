@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { guideLabelPositions } from "./guide-labels";
 import { Icon } from "@/features/learning/components/icons";
 import {
   evaluateTrace,
@@ -58,12 +59,17 @@ export function WritingCanvas({
   character,
   onFinish,
   ready,
+  onRetryAttempt,
+  onGuide,
 }: {
   character: string;
   onFinish: (score: number) => void;
   ready: boolean;
+  onRetryAttempt?: (score: number) => void;
+  onGuide?: () => void;
 }) {
   const template = writingTemplates[character];
+  const labels = guideLabelPositions(template);
   const canvas = useRef<HTMLCanvasElement>(null);
   const strokes = useRef<Stroke[]>([]);
   const activeStroke = useRef<Stroke | null>(null);
@@ -105,7 +111,10 @@ export function WritingCanvas({
     if (activePointer.current !== event.pointerId || !activeStroke.current)
       return;
     event.preventDefault();
-    activeStroke.current.push(pointerPoint(event));
+    const point = pointerPoint(event);
+    const last = activeStroke.current[activeStroke.current.length - 1];
+    if (Math.hypot(last.x - point.x, last.y - point.y) < 1) return;
+    activeStroke.current.push(point);
     repaint();
   };
 
@@ -134,7 +143,9 @@ export function WritingCanvas({
   };
 
   const retry = () => {
+    if (result) onRetryAttempt?.(result.score);
     strokes.current = [];
+    activePointer.current = null;
     activeStroke.current = null;
     setStrokeCount(0);
     setResult(null);
@@ -146,11 +157,11 @@ export function WritingCanvas({
     ? strokeCount < template.length && result.coverage >= 0.7
       ? "Bentuknya sudah dekat. Ikuti nomor goresan satu per satu agar lebih rapi."
       : result.score >= 70
-        ? "Garisnya sudah mengikuti banyak bagian contoh."
+        ? "Bentuk tulisanmu sudah mendekati contoh."
         : result.score >= 40
-          ? "Beberapa bagian sudah dekat. Kamu boleh mencoba lagi."
-          : "Terima kasih sudah mencoba. Lihat contoh lalu coba lagi jika mau."
-    : "Mulai dari lingkaran bernomor, lalu ikuti arah panah.";
+          ? "Sebagian garis sudah sesuai. Coba ikuti bagian yang belum terisi."
+          : "Lihat contoh, lalu ikuti garisnya pelan-pelan. Kamu boleh mencoba lagi."
+    : "Ikuti nomor dan arah panah. Garis tipis menunjukkan titik mulai.";
 
   return (
     <div className="writing-workspace">
@@ -161,7 +172,7 @@ export function WritingCanvas({
             {/^[0-9]$/.test(character) ? "Angka" : "Huruf"} {character}
           </h2>
         </div>
-        <span className="trace-tag">Mouse · Sentuh · Stylus</span>
+        <span className="trace-tag">Jari atau pena layar</span>
       </div>
       <div className="trace-board">
         <svg
@@ -181,48 +192,80 @@ export function WritingCanvas({
               <path d="M 0 0 L 8 4 L 0 8 z" fill="#F5723F" />
             </marker>
           </defs>
-          {template.map((stroke, index) => (
-            <g key={index}>
-              <polyline
-                points={stroke
-                  .map((point) => `${point.x},${point.y}`)
-                  .join(" ")}
-                fill="none"
-                stroke="#D8B4FE"
-                strokeWidth="13"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray={showGuide ? undefined : "4 9"}
-              />
-              <circle
-                cx={stroke[0].x}
-                cy={stroke[0].y}
-                r="16"
-                fill="#FFE3D6"
-                stroke="#F5723F"
-                strokeWidth="2"
-              />
-              <text
-                x={stroke[0].x}
-                y={stroke[0].y + 5}
-                textAnchor="middle"
-                fontSize="14"
-                fontWeight="bold"
-                fill="#1E0A45"
-              >
-                {index + 1}
-              </text>
-              <line
-                x1={stroke[4].x}
-                y1={stroke[4].y}
-                x2={stroke[10].x}
-                y2={stroke[10].y}
-                stroke="#F5723F"
-                strokeWidth="3"
-                markerEnd="url(#trace-arrow)"
-              />
-            </g>
-          ))}
+          <g data-guide-layer="paths">
+            {template.map((stroke, index) => (
+              <g key={index}>
+                <polyline
+                  points={stroke
+                    .map((point) => `${point.x},${point.y}`)
+                    .join(" ")}
+                  fill="none"
+                  stroke="#D8B4FE"
+                  strokeWidth="13"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeDasharray={showGuide ? undefined : "4 9"}
+                />
+                <line
+                  x1={stroke[4].x}
+                  y1={stroke[4].y}
+                  x2={stroke[10].x}
+                  y2={stroke[10].y}
+                  stroke="#F5723F"
+                  strokeWidth="3"
+                  markerEnd="url(#trace-arrow)"
+                />
+              </g>
+            ))}
+          </g>
+          <g data-guide-layer="starts">
+            {template.map(
+              (stroke, index) =>
+                (labels[index].x !== stroke[0].x ||
+                  labels[index].y !== stroke[0].y) && (
+                  <g key={index}>
+                    <line
+                      x1={labels[index].x}
+                      y1={labels[index].y}
+                      x2={stroke[0].x}
+                      y2={stroke[0].y}
+                      stroke="#F5723F"
+                      strokeWidth="1.5"
+                    />
+                    <circle
+                      cx={stroke[0].x}
+                      cy={stroke[0].y}
+                      r="4"
+                      fill="#F5723F"
+                    />
+                  </g>
+                ),
+            )}
+          </g>
+          <g data-guide-layer="numbers">
+            {labels.map((label, index) => (
+              <g key={index}>
+                <circle
+                  cx={label.x}
+                  cy={label.y}
+                  r="16"
+                  fill="#FFE3D6"
+                  stroke="#F5723F"
+                  strokeWidth="2"
+                />
+                <text
+                  x={label.x}
+                  y={label.y + 6}
+                  textAnchor="middle"
+                  fontSize="18"
+                  fontWeight="bold"
+                  fill="#1E0A45"
+                >
+                  {index + 1}
+                </text>
+              </g>
+            ))}
+          </g>
         </svg>
         <canvas
           ref={canvas}
@@ -232,12 +275,16 @@ export function WritingCanvas({
           onPointerMove={move}
           onPointerUp={end}
           onPointerCancel={end}
+          onLostPointerCapture={end}
         />
       </div>
       <div className="trace-controls">
         <button
           className="button button-outline"
-          onClick={() => setShowGuide((value) => !value)}
+          onClick={() => {
+            if (!showGuide) onGuide?.();
+            setShowGuide((value) => !value);
+          }}
           aria-pressed={showGuide}
         >
           <Icon name="book" size={18} />{" "}
@@ -248,7 +295,7 @@ export function WritingCanvas({
           onClick={undo}
           disabled={!strokeCount}
         >
-          Hapus
+          Hapus garis terakhir
         </button>
         <button
           className="button button-outline"
@@ -261,16 +308,24 @@ export function WritingCanvas({
       <div className="trace-feedback" role="status">
         <div>
           <strong>
-            {result ? `Kecocokan jalur: ${result.score}%` : "Ayo mulai menulis"}
+            {result
+              ? `Kecocokan bentuk: ${result.score}%`
+              : "Ayo mulai menulis"}
           </strong>
           <p>{feedback}</p>
+          {result && result.score < 70 && (
+            <p>
+              Latihan ini akan dicatat sebagai percobaan. Kamu bisa berlatih
+              lagi nanti.
+            </p>
+          )}
         </div>
         <button
           className="button button-primary"
           disabled={!strokeCount || !ready}
           onClick={() => onFinish(result?.score ?? 0)}
         >
-          Selesai <Icon name="arrow" size={18} />
+          Simpan latihan <Icon name="arrow" size={18} />
         </button>
       </div>
     </div>

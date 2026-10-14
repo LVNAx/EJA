@@ -23,7 +23,7 @@ void main(){
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-export function AuroraBackground() {
+export function AuroraBackground({ paused = false }: { paused?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -51,14 +51,19 @@ export function AuroraBackground() {
 
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-1, -1, 3, -1, -1, 3]),
+      gl.STATIC_DRAW,
+    );
     const loc = gl.getAttribLocation(prog, "p");
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const uR = gl.getUniformLocation(prog, "r");
     const uT = gl.getUniformLocation(prog, "t");
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce =
+      paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const scale = 0.5; // render setengah resolusi: halus, murah
     let raf = 0;
     const start = performance.now();
@@ -81,18 +86,29 @@ export function AuroraBackground() {
 
     resize();
     draw();
-    const onResize = () => { resize(); draw(); };
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      resize();
+      draw();
+    };
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisible);
+      gl.deleteBuffer(buf);
+      gl.deleteProgram(prog);
+      gl.deleteShader(vs);
+      gl.deleteShader(fs);
     };
-  }, []);
+  }, [paused]);
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-white">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 -z-10 bg-white"
+    >
       <canvas ref={ref} className="h-full w-full" />
     </div>
   );

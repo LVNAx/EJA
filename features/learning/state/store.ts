@@ -1,15 +1,17 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { z } from "zod";
 import { lessonById } from "../math/content";
 import { awardOnce, localDateKey, nextStreak } from "./progress";
+import { evidenceSchema, type LearningEvidence } from "./evidence";
 
 const settingsSchema = z.object({
   textSize: z.enum(["normal", "large"]),
   fontFamily: z.enum(["standard", "opendyslexic"]).default("standard"),
   audioRate: z.number().min(0.7).max(1.1),
   rewardSound: z.boolean(),
+  reducedMotion: z.boolean().default(true),
 });
 
 const lessonProgressSchema = z.object({
@@ -29,8 +31,12 @@ const sessionSchema = z.object({
   learned: z.array(z.string()),
 });
 
-const stateSchema = z.object({
+export const stateSchema = z.object({
   version: z.literal(2),
+  selections: z
+    .object({ reading: z.string(), writing: z.string() })
+    .default({ reading: "pecahan", writing: "A" }),
+  evidence: z.record(z.string(), evidenceSchema).default({}),
   totalXp: z.number().nonnegative(),
   streak: z.number().int().nonnegative(),
   lastActiveDate: z.string().nullable(),
@@ -74,7 +80,8 @@ export type PracticeKind = "reading" | "writing";
 
 const STORAGE_PREFIX = "eja-progress-v2:";
 
-function storageKey(): string {
+function storageKey(explicitChildId?: string): string {
+  if (explicitChildId) return `${STORAGE_PREFIX}${explicitChildId}`;
   if (typeof window === "undefined") return `${STORAGE_PREFIX}server`;
   const childId = /^\/child\/([^/]+)(?:\/|$)/.exec(
     window.location.pathname,
@@ -84,6 +91,8 @@ function storageKey(): string {
 
 export const initialState: AppState = {
   version: 2,
+  selections: { reading: "pecahan", writing: "A" },
+  evidence: {},
   totalXp: 0,
   streak: 0,
   lastActiveDate: null,
@@ -96,17 +105,30 @@ export const initialState: AppState = {
     fontFamily: "standard",
     audioRate: 0.9,
     rewardSound: true,
+    reducedMotion: true,
   },
   badges: [],
 };
 
-let current: AppState | null = null;
-let currentKey: string | null = null;
+const cache = new Map<string, AppState>();
+const storageErrors = new Set<string>();
 const listeners = new Set<() => void>();
 
 function migrate(raw: unknown): AppState {
   const parsed = stateSchema.safeParse(raw);
-  if (parsed.success) return parsed.data;
+  if (parsed.success) {
+    const state = parsed.data;
+    // Existing version-2 data predates saved selections. Recover the active item.
+    if (raw && typeof raw === "object" && !("selections" in raw)) {
+      for (const kind of ["reading", "writing"] as const) {
+        const id = state.activePractices[kind];
+        const session = id ? state.sessions[id] : null;
+        if (session && !session.completedAt)
+          state.selections[kind] = session.activityId;
+      }
+    }
+    return state;
+  }
 
   const old = legacyStateSchema.parse(raw);
   const sessions: AppState["sessions"] = {};
@@ -122,12 +144,12 @@ function migrate(raw: unknown): AppState {
       learned: session.learned,
     };
   }
-  return {
+  return stateSchema.parse({
     ...old,
     version: 2,
     activePractices: { reading: null, writing: null },
     sessions,
-  };
+  });
 }
 
 function load(key: string): AppState {
@@ -140,27 +162,38 @@ function load(key: string): AppState {
   }
 }
 
-function snapshot(): AppState {
-  const key = storageKey();
-  if (!current || currentKey !== key) {
-    current = load(key);
-    currentKey = key;
-  }
-  return current;
+function snapshot(childId?: string): AppState {
+  const key = storageKey(childId);
+  if (!cache.has(key)) cache.set(key, load(key));
+  return cache.get(key)!;
+}
+
+function onStorage(event: StorageEvent) {
+  if (event.key === null) cache.clear();
+  else if (event.key.startsWith(STORAGE_PREFIX)) cache.delete(event.key);
+  else return;
+  listeners.forEach((listener) => listener());
 }
 
 function subscribe(listener: () => void): () => void {
+  if (listeners.size === 0 && typeof window !== "undefined")
+    window.addEventListener?.("storage", onStorage);
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+    if (!listeners.size && typeof window !== "undefined")
+      window.removeEventListener?.("storage", onStorage);
+  };
 }
 
 function commit(next: AppState): void {
-  current = next;
-  currentKey = storageKey();
+  const key = storageKey();
+  cache.set(key, next);
   try {
-    window.localStorage.setItem(currentKey, JSON.stringify(next));
+    window.localStorage.setItem(key, JSON.stringify(next));
+    storageErrors.delete(key);
   } catch {
-    // Keep the current session usable when browser storage is unavailable.
+    storageErrors.add(key);
   }
   listeners.forEach((listener) => listener());
 }
@@ -192,8 +225,91 @@ function award(
   draft.sessions[sessionId].xpEarned += result.gained;
 }
 
-export function useAppState(): AppState {
-  return useSyncExternalStore(subscribe, snapshot, () => initialState);
+export function useAppState(childId?: string): AppState {
+  const getSnapshot = useCallback(() => snapshot(childId), [childId]);
+  return useSyncExternalStore(subscribe, getSnapshot, () => initialState);
+}
+
+export function useBrowserReady(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
+}
+
+export function useStorageStatus(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => !storageErrors.has(storageKey()),
+    () => true,
+  );
+}
+
+export function selectPractice(kind: PracticeKind, activityId: string): void {
+  change((draft) => {
+    draft.selections[kind] = activityId;
+  });
+}
+
+function evidenceFor(draft: AppState, sessionId: string): LearningEvidence {
+  return (draft.evidence[sessionId] ??= evidenceSchema.parse({}));
+}
+
+export function recordHelp(sessionId: string, kind: "hint" | "audio"): void {
+  if (
+    !snapshot().sessions[sessionId] ||
+    snapshot().sessions[sessionId].completedAt
+  )
+    return;
+  change((draft) => {
+    const evidence = evidenceFor(draft, sessionId);
+    if (kind === "hint") evidence.hints += 1;
+    else evidence.audioPlays += 1;
+  });
+}
+
+export function recordWritingAttempt(sessionId: string, score: number): void {
+  if (
+    !snapshot().sessions[sessionId] ||
+    snapshot().sessions[sessionId].completedAt ||
+    !Number.isFinite(score)
+  )
+    return;
+  change((draft) => {
+    const evidence = evidenceFor(draft, sessionId);
+    evidence.writingScores = [
+      ...evidence.writingScores.slice(-49),
+      Math.max(0, Math.min(100, score)),
+    ];
+  });
+}
+
+export function recordReadingAttempt(
+  sessionId: string,
+  matched: boolean,
+): void {
+  if (
+    !snapshot().sessions[sessionId] ||
+    snapshot().sessions[sessionId].completedAt
+  )
+    return;
+  change((draft) => {
+    const evidence = evidenceFor(draft, sessionId);
+    evidence.readingAttempts += 1;
+    if (matched) evidence.readingMatches += 1;
+  });
+}
+
+export function recordSelfReading(sessionId: string): void {
+  if (
+    !snapshot().sessions[sessionId] ||
+    snapshot().sessions[sessionId].completedAt
+  )
+    return;
+  change((draft) => {
+    evidenceFor(draft, sessionId).selfRead = true;
+  });
 }
 
 export function updateSettings(settings: Partial<Settings>): void {
@@ -229,13 +345,21 @@ export function ensureLessonSession(lessonId: string): string | null {
     draft.lessons[lessonId] = {
       currentStep: 0,
       activeSessionId: id,
-      completed: false,
+      completed: draft.lessons[lessonId]?.completed ?? false,
     };
   });
   return id;
 }
 
-export function completeQuiz(lessonId: string, chunkId: string): void {
+export function recordQuizAnswer(
+  lessonId: string,
+  chunkId: string,
+  answerIndex: number,
+): void {
+  const quiz = lessonById(lessonId)?.chunks.find(
+    (chunk) => chunk.id === chunkId,
+  )?.quiz;
+  if (!quiz || answerIndex < 0 || answerIndex >= quiz.options.length) return;
   const state = snapshot();
   const sessionId = state.lessons[lessonId]?.activeSessionId;
   if (
@@ -244,7 +368,27 @@ export function completeQuiz(lessonId: string, chunkId: string): void {
     state.sessions[sessionId].completedAt
   )
     return;
-  change((draft) => award(draft, sessionId, `quiz:${lessonId}:${chunkId}`, 20));
+  change((draft) => {
+    const evidence = evidenceFor(draft, sessionId);
+    const previous = evidence.quizzes[chunkId];
+    if (previous?.solved) return;
+    const correct = answerIndex === quiz.answerIndex;
+    evidence.quizzes[chunkId] = {
+      attempts: (previous?.attempts ?? 0) + 1,
+      incorrect: (previous?.incorrect ?? 0) + (correct ? 0 : 1),
+      solved: correct,
+      firstTryCorrect: previous ? previous.firstTryCorrect : correct,
+    };
+    if (correct) award(draft, sessionId, `quiz:${lessonId}:${chunkId}`, 20);
+  });
+}
+
+// Retained for existing callers; actual UI records the chosen answer.
+export function completeQuiz(lessonId: string, chunkId: string): void {
+  const quiz = lessonById(lessonId)?.chunks.find(
+    (chunk) => chunk.id === chunkId,
+  )?.quiz;
+  if (quiz) recordQuizAnswer(lessonId, chunkId, quiz.answerIndex);
 }
 
 export function advanceLesson(
@@ -261,7 +405,8 @@ export function advanceLesson(
     !chunk ||
     !sessionId ||
     !state.sessions[sessionId] ||
-    state.sessions[sessionId].completedAt
+    state.sessions[sessionId].completedAt ||
+    (chunk.quiz && !state.evidence[sessionId]?.quizzes[chunkId]?.solved)
   )
     return;
   change((draft) => {
@@ -293,7 +438,16 @@ export function finishLesson(lessonId: string, chunkId: string): string | null {
     state.sessions[sessionId].completedAt
   )
     return null;
-  advanceLesson(lessonId, chunkId, lessonById(lessonId)?.chunks.length ?? 1);
+  const lesson = lessonById(lessonId);
+  if (
+    !lesson ||
+    lesson.chunks.some(
+      (chunk) =>
+        chunk.quiz && !state.evidence[sessionId]?.quizzes[chunk.id]?.solved,
+    )
+  )
+    return null;
+  advanceLesson(lessonId, chunkId, lesson.chunks.length);
   change((draft) => {
     draft.sessions[sessionId].completedAt = new Date().toISOString();
     draft.lessons[lessonId].completed = true;
@@ -321,7 +475,15 @@ export function ensurePracticeSession(
       draft.sessions[activeId] &&
       !draft.sessions[activeId].completedAt
     ) {
-      delete draft.sessions[activeId];
+      const observed = draft.evidence[activeId];
+      if (
+        !observed ||
+        (!observed.hints &&
+          !observed.audioPlays &&
+          !observed.readingAttempts &&
+          !observed.writingScores.length)
+      )
+        delete draft.sessions[activeId];
     }
     draft.sessions[id] = {
       id,
@@ -348,7 +510,14 @@ export function finishPractice(
   if (snapshot().activePractices[kind] !== sessionId) return null;
 
   change((draft) => {
-    award(draft, sessionId, `practice:${sessionId}:${session.activityId}`, 15);
+    const evidence = draft.evidence[sessionId];
+    const checked =
+      kind === "writing"
+        ? (evidence?.writingScores.at(-1) ?? 0) >= 70
+        : (evidence?.readingMatches ?? 0) > 0;
+    const dailyKey = `practice:${kind}:${session.activityId}:${localDateKey(new Date())}`;
+    award(draft, sessionId, `${dailyKey}:effort`, 5);
+    if (checked) award(draft, sessionId, `${dailyKey}:achievement`, 10);
     draft.sessions[sessionId].learned = learned;
     draft.sessions[sessionId].completedAt = new Date().toISOString();
     draft.activePractices[kind] = null;
@@ -358,7 +527,9 @@ export function finishPractice(
 }
 
 export function resetProgress(): void {
-  current = initialState;
+  const key = storageKey();
+  cache.set(key, structuredClone(initialState));
+  storageErrors.delete(key);
   try {
     window.localStorage.removeItem(storageKey());
   } catch {

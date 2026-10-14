@@ -1,0 +1,67 @@
+.child-dashboard {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #1e0a45;
+}
+.child-dashboard[data-text-size="large"] {
+  font-size: 22px;
+}
+.child-dashboard h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.child-dashboard h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.child-dashboard h3 {
+  font-size: 1.2em;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.child-dashboard p,
+.child-dashboard label,
+.child-dashboard button,
+.child-dashboard select,
+.child-dashboard a {
+  font-size: 1em;
+}
+.child-dashboard .small-note {
+  font-size: 0.85em;
+}
+.child-dashboard button,
+.child-dashboard select,
+.child-dashboard .btn-primary,
+.child-dashboard .btn-ghost {
+  min-height: 48px;
+}
+.child-dashboard input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: #7e22ce;
+}
+.child-dashboard[data-reduce-motion="true"] *,
+.child-dashboard[data-reduce-motion="true"] *::before {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+@media (max-width: 450px) {
+  .child-dashboard header {
+    gap: 12px;
+  }
+  .child-dashboard header .btn-ghost {
+    font-size: 0.8em;
+  }
+}
+.child-dashboard header > div {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.child-dashboard .btn-ghost,
+.child-dashboard .btn-primary {
+  max-width: 100%;
+  white-space: normal;
+}

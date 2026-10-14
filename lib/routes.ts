@@ -2,6 +2,7 @@
 export const DEMO_CHILD_ID = "demo";
 
 export const ROUTES = {
+  learningDemo: "/demo/belajar",
   login: "/login",
   childLogin: "/masuk-anak",
   dashboard: "/dashboard",
