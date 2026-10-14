@@ -33,6 +33,13 @@ describe("middleware: kunci dasbor orang tua", () => {
     expect(location(r)).toBe("/login?next=%2Fdashboard%2Fchild%2Fabc");
   });
 
+  it("demo belajar terbuka tanpa akun; profil anak asli tetap membutuhkan login", async () => {
+    for (const path of ["/demo/belajar", "/child/demo/belajar/latihan/membaca", "/child/demo/belajar/latihan/menulis", "/child/demo/belajar/matematika"]) {
+      expect(location(await middleware(req(path)))).toBeNull();
+    }
+    expect(location(await middleware(req("/child/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/belajar/latihan/menulis")))).toContain("/login?");
+  });
+
   it("sudah login tetapi tanpa cookie buka-kunci (mis. perangkat dipegang anak): diarahkan ke /unlock", async () => {
     state.user = { id: U };
     const r = await middleware(req("/dashboard"));

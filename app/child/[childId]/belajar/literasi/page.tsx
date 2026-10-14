@@ -26,7 +26,7 @@ export default function LiteracyPage() {
           </h1>
           <p>
             Pilih kegiatan yang kamu suka. Dengarkan, baca, dan coba menulis
-            dengan langkahmu sendiri.
+            pelan-pelan, sesuai kemampuanmu.
           </p>
         </div>
         <div className="literacy-doodle" aria-hidden="true">
@@ -41,7 +41,10 @@ export default function LiteracyPage() {
         </div>
       </div>
       <div className="literacy-cards">
-        <Link href={learningHref(childId, "/latihan/membaca")} className="literacy-card">
+        <Link
+          href={learningHref(childId, "/latihan/membaca")}
+          className="literacy-card"
+        >
           <span className="literacy-card-icon reading">Aa</span>
           <span className="section-kicker">DENGARKAN · BACA</span>
           <h3>Latihan Membaca</h3>
@@ -53,12 +56,16 @@ export default function LiteracyPage() {
             Mulai membaca <Icon name="arrow" size={17} />
           </span>
         </Link>
-        <Link href={learningHref(childId, "/latihan/menulis")} className="literacy-card">
+        <Link
+          href={learningHref(childId, "/latihan/menulis")}
+          className="literacy-card"
+        >
           <span className="literacy-card-icon writing">✎</span>
           <span className="section-kicker">LIHAT · TELUSURI</span>
           <h3>Latihan Menulis</h3>
           <p>
-            Telusuri huruf besar A–Z, huruf kecil a–z, dan angka 0–9 di kanvas.
+            Telusuri huruf besar A–Z, huruf kecil a–z, dan angka 0–9 di area
+            menulis.
           </p>
           <span className="card-link">
             Mulai menulis <Icon name="arrow" size={17} />

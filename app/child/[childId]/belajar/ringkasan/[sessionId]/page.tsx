@@ -3,12 +3,28 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Icon } from "@/features/learning/components/icons";
-import { useAppState } from "@/features/learning/state/store";
+import {
+  useAppState,
+  useBrowserReady,
+  useStorageStatus,
+} from "@/features/learning/state/store";
+import { evidenceStatus } from "@/features/learning/state/evidence";
 import { learningHref } from "@/features/learning/paths";
 
 export default function SummaryPage() {
-  const { childId, sessionId } = useParams<{ childId: string; sessionId: string }>();
+  const { childId, sessionId } = useParams<{
+    childId: string;
+    sessionId: string;
+  }>();
   const state = useAppState();
+  const ready = useBrowserReady();
+  const saved = useStorageStatus();
+  if (!ready)
+    return (
+      <div className="container loading-page" role="status">
+        Memuat catatan latihan...
+      </div>
+    );
   const session = state.sessions[sessionId];
   if (!session?.completedAt)
     return (
@@ -24,7 +40,10 @@ export default function SummaryPage() {
       </div>
     );
 
-  const againHref = learningHref(childId, session.kind === "math" ? "/matematika" : "/literasi");
+  const againHref = learningHref(
+    childId,
+    session.kind === "math" ? "/matematika" : "/literasi",
+  );
   return (
     <div className="container summary-page">
       <div className="summary-confetti" aria-hidden="true">
@@ -34,26 +53,34 @@ export default function SummaryPage() {
         <div className="summary-medal">
           <Icon name="star" size={40} />
         </div>
-        <span className="section-kicker">HEBAT, KAMU SUDAH SELESAI!</span>
+        <span className="section-kicker">TERIMA KASIH SUDAH BERLATIH</span>
         <h1>
-          Satu langkah lagi
+          Kamu sudah
           <br />
-          <em>terlampaui.</em>
+          <em>mencoba!</em>
         </h1>
         <p className="summary-lead">
-          Kamu sudah menyelesaikan <strong>{session.title}</strong>. Terima
-          kasih sudah mencoba sampai akhir!
+          Kamu sudah berlatih <strong>{session.title}</strong>. Kamu boleh
+          mengulang kapan saja.
         </p>
         <div className="summary-stats">
           <div>
-            <span>XP sesi ini</span>
-            <strong>+{session.xpEarned} XP</strong>
+            <span>Bintang latihan ini</span>
+            <strong>+{session.xpEarned} bintang</strong>
           </div>
           <div>
             <span>Belajar beruntun</span>
             <strong>{state.streak} hari</strong>
           </div>
         </div>
+        <p className="assistive-note" role="status">
+          {saved
+            ? "Catatan tersimpan pada perangkat ini."
+            : "Catatan belum tersimpan. Jangan tutup halaman dulu."}
+        </p>
+        <p className="assistive-note">
+          {evidenceStatus(session.kind, state.evidence[session.id])}
+        </p>
         <div className="summary-learned">
           <h2>Yang kamu lakukan</h2>
           <ul>

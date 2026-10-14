@@ -29,35 +29,39 @@ Anak disleksia berbahasa Indonesia sering terlambat terdeteksi, sementara skrini
 
 1. **Skrining**: empat permainan pendek yang terasa seperti bermain, bukan ujian.
 2. **Rekomendasi**: level risiko dengan bahasa awam, saran untuk orang tua dan guru, serta kapan perlu menemui profesional.
-3. **Belajar** *(prototipe)*: latihan membaca dan menulis, serta dua materi matematika bertahap dengan suara, ilustrasi, dan kuis.
+3. **Belajar** _(prototipe)_: latihan membaca dan menulis, serta dua materi matematika bertahap dengan suara, ilustrasi, dan kuis.
 
-Hasil skrining tampil di **dasbor orang tua**. Progres modul belajar prototipe saat ini tersimpan per anak di browser dan belum tersambung ke dasbor. Anak tidak pernah melihat tingkat risikonya.
+Hasil skrining tampil di **dasbor orang tua**. Progres modul belajar tersimpan per anak di browser. Dasbor orang tua menampilkan catatan latihan nyata dari browser yang sama; sinkronisasi monitoring lintas perangkat belum tersedia. Anak tidak pernah melihat tingkat risikonya.
 
 Proyek ini dibuat untuk **JOINTS UGM 2026**.
 
+## Demo singkat
+
+Dari beranda, pilih **Coba Belajar** untuk membuka pilihan membaca, menulis, atau matematika tanpa akun. Alamat langsung: `/demo/belajar`. **Coba Skrining** tetap membuka empat permainan di `/screening/demo`. Di dalam latihan demo, gunakan **Pilih kegiatan lain** untuk kembali. Catatan demo belajar tersimpan hanya di browser, terpisah dari profil anak.
+
 ## Status
 
-| Bagian | Status |
-|---|---|
-| Halaman publik (beranda, cara kerja, FAQ, dll.) | ✅ Selesai |
-| Modul skrining (4 permainan, skor, mutu sesi) | ✅ Selesai |
-| Rekomendasi klinis + laporan hasil + radar chart | ✅ Selesai, teks masih **draf belum ditinjau psikolog** |
-| Dasbor orang tua | ✅ Selesai, diuji dalam **mode demo** |
-| Auth orang tua, profil anak, kunci dasbor | ✅ Email + password, callback konfirmasi dan kunci parent; database/RLS diuji pada Supabase, email konfirmasi masih perlu uji manual |
-| Email notifikasi (cron) | ⚠️ Ada, belum pernah mengirim; tanpa kunci hanya *dry-run* |
-| Modul belajar | ✅ Prototipe membaca, menulis A–Z/a–z/0–9, dan 2 materi matematika; progres masih lokal per anak |
-| Masuk anak dengan PIN | ✅ Avatar + PIN, cooldown 5 percobaan, sesi terikat profil dan reset PIN oleh orang tua |
+| Bagian                                           | Status                                                                                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Halaman publik (beranda, cara kerja, FAQ, dll.)  | ✅ Selesai                                                                                                                           |
+| Modul skrining (4 permainan, skor, mutu sesi)    | ✅ Selesai                                                                                                                           |
+| Rekomendasi klinis + laporan hasil + radar chart | ✅ Selesai, teks masih **draf belum ditinjau psikolog**                                                                              |
+| Dasbor orang tua                                 | ✅ Selesai, diuji dalam **mode demo**                                                                                                |
+| Auth orang tua, profil anak, kunci dasbor        | ✅ Email + password, callback konfirmasi dan kunci parent; database/RLS diuji pada Supabase, email konfirmasi masih perlu uji manual |
+| Email notifikasi (cron)                          | ⚠️ Ada, belum pernah mengirim; tanpa kunci hanya _dry-run_                                                                           |
+| Modul belajar                                    | ✅ Prototipe membaca, menulis A–Z/a–z/0–9, dan 2 materi matematika; progres masih lokal per anak                                     |
+| Masuk anak dengan PIN                            | ✅ Avatar + PIN, cooldown 5 percobaan, sesi terikat profil dan reset PIN oleh orang tua                                              |
 
 ## Fitur
 
 ### Skrining
 
-| Permainan | Yang diukur | Bobot awal |
-|---|---|:--:|
-| Dengarkan & Pilih | Kesadaran bunyi (fonologis) | 35% |
-| Sebutkan Cepat | Penamaan cepat huruf | 30% |
-| Tulisan yang Benar | Ketepatan ejaan | 20% |
-| Ingat Urutannya | Memori kerja (digit span) | 15% |
+| Permainan          | Yang diukur                 | Bobot awal |
+| ------------------ | --------------------------- | :--------: |
+| Dengarkan & Pilih  | Kesadaran bunyi (fonologis) |    35%     |
+| Sebutkan Cepat     | Penamaan cepat huruf        |    30%     |
+| Tulisan yang Benar | Ketepatan ejaan             |    20%     |
+| Ingat Urutannya    | Memori kerja (digit span)   |    15%     |
 
 - **Skor gabungan** adalah rata-rata berbobot. Di atas 0,75 = Risiko Rendah, di atas 0,45 = Sedang, selain itu Tinggi.
 - **Eskalasi**: bila satu dimensi di bawah 0,30, status dinaikkan satu tingkat agar kelemahan tajam tidak tertutup rata-rata.
@@ -83,36 +87,37 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 
 ### Belajar (prototipe)
 
-- Dasbor anak menampilkan profil dan avatar, XP, streak aktif, sesi hari ini, lanjutkan aktivitas, lencana, riwayat sesi, pengaturan aksesibilitas, dan pintasan skrining. Matematika tersedia untuk kelas 4–6; IPA dan Pancasila ditandai segera hadir. Data risiko tidak dikirim ke dasbor anak.
+- Beranda anak memprioritaskan dua modul: Membaca & Menulis dan Matematika. Ada pilihan melanjutkan aktivitas terakhir, bintang usaha, riwayat latihan, pengaturan aksesibilitas, dan pintasan permainan skrining. Matematika berisi dua materi untuk kelas 4–6. Data risiko tidak dikirim ke dasbor anak.
 - Beranda modul belajar membuka dua bagian: **Membaca & Menulis** dan **Matematika**.
-- Contoh baca diucapkan per suku kata dengan jeda dan penyorotan; mikrofon opsional.
+- Contoh baca diucapkan per suku kata dengan jeda dan penyorotan; mikrofon opsional. Ucapan seperti `pe ca han` diterima untuk `pecahan`.
 - Menulis memakai panduan goresan untuk huruf besar A–Z, huruf kecil a–z, dan angka 0–9. Skor mempertimbangkan jarak, cakupan, jumlah goresan, dan pengulangan garis.
-- Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok, disajikan bertahap dengan kuis singkat.
-- Font OpenDyslexic, ukuran teks, kecepatan suara, dan efek apresiasi dapat diatur. Progres, XP, dan sesi tersimpan di browser dengan kunci terpisah untuk tiap anak. Data ini belum ditulis ke tabel Supabase dan belum muncul di dasbor orang tua.
+- Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok. Contoh sehari-hari dan dua tingkat petunjuk tersedia; jawaban belum tepat membuka bantuan bertahap. Kuis harus dijawab tepat sebelum materi dapat diselesaikan. Pengulangan materi tidak menghapus status pernah selesai.
+- Catatan lokal mencakup percobaan kuis, jawaban belum tepat, petunjuk, pemutaran contoh, kecocokan bentuk tulisan, dan hasil pencocokan bacaan. Membaca mandiri dicatat sebagai laporan anak dan belum dinilai otomatis. Bintang usaha dan pencapaian diberikan terbatas per aktivitas per hari.
+- Font OpenDyslexic, skala teks pada seluruh modul belajar, kecepatan suara, gerakan, dan efek apresiasi dapat diatur. Dialog pengaturan mendukung keyboard dan Escape. Progres, XP, dan sesi tersimpan di browser dengan kunci terpisah untuk tiap anak. Data ini belum ditulis ke tabel Supabase. Dasbor orang tua pada halaman anak menampilkan catatan nyata dari browser yang sama dalam bagian **Catatan latihan dan bantuan**, terpisah dari grafik riwayat database.
 
 ### Keamanan & privasi
 
-| Hal | Cara |
-|---|---|
-| Data per akun | **Row Level Security** di semua tabel: orang tua hanya melihat data anaknya |
-| Hash PIN anak | bcrypt, dan kolomnya **tidak dapat dibaca klien** (grant kolom) |
+| Hal                 | Cara                                                                             |
+| ------------------- | -------------------------------------------------------------------------------- |
+| Data per akun       | **Row Level Security** di semua tabel: orang tua hanya melihat data anaknya      |
+| Hash PIN anak       | bcrypt, dan kolomnya **tidak dapat dibaca klien** (grant kolom)                  |
 | Dasbor vs sesi anak | Cookie **buka-kunci** bertanda tangan HMAC. Bila dihapus, dasbor justru terkunci |
-| Tujuan redirect | Hanya jalur di dalam situs (`safeNext`), mencegah *open redirect* |
-| Kunci service | Hanya dipakai di cron server, tidak pernah di `NEXT_PUBLIC_*` |
-| Audio | Tidak direkam atau disimpan |
-| Email notifikasi | Tanpa level risiko atau skor; ada opsi mematikan |
+| Tujuan redirect     | Hanya jalur di dalam situs (`safeNext`), mencegah _open redirect_                |
+| Kunci service       | Hanya dipakai di cron server, tidak pernah di `NEXT_PUBLIC_*`                    |
+| Audio               | Tidak direkam atau disimpan                                                      |
+| Email notifikasi    | Tanpa level risiko atau skor; ada opsi mematikan                                 |
 
 ## Tech Stack
 
-| Bagian | Teknologi |
-|---|---|
-| Framework | Next.js 14 (App Router), React 18, TypeScript |
+| Bagian         | Teknologi                                                                                                  |
+| -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Framework      | Next.js 14 (App Router), React 18, TypeScript                                                              |
 | Gaya & animasi | Tailwind CSS, Framer Motion, ikon lucide-react; gaya modul belajar diisolasi di `features/learning/styles` |
-| Latar | Shader WebGL buatan sendiri |
-| Backend & data | Supabase (PostgreSQL, Auth, RLS) lewat `@supabase/ssr` |
-| Suara | Web Speech API bawaan peramban (`id-ID`) |
-| Tes | Vitest, PGlite (Postgres in-process untuk menguji migrasi dan RLS) |
-| Penerapan | Vercel (cron harian untuk email) |
+| Latar          | Shader WebGL buatan sendiri                                                                                |
+| Backend & data | Supabase (PostgreSQL, Auth, RLS) lewat `@supabase/ssr`                                                     |
+| Suara          | Web Speech API bawaan peramban (`id-ID`)                                                                   |
+| Tes            | Vitest, PGlite (Postgres in-process untuk menguji migrasi dan RLS)                                         |
+| Penerapan      | Vercel (cron harian untuk email)                                                                           |
 
 ## Struktur Folder
 
@@ -167,20 +172,20 @@ Buka <http://localhost:3000>. Tanpa konfigurasi apa pun, EJA berjalan dalam **mo
 
 ### Rute untuk dicoba (mode demo)
 
-| Alamat | Isi |
-|---|---|
-| `/` | Beranda |
-| `/screening/demo` | Tes demo, hasilnya langsung tampil |
-| `/dashboard` | Ringkasan tiga anak contoh |
-| `/dashboard/child/demo-rizky` | Dasbor anak (kasus eskalasi ke Risiko Tinggi) |
-| `/dashboard/child/demo-rizky/screening` | Laporan skrining lengkap |
-| `/dashboard/child/demo-nadia` | Dasbor anak (Risiko Rendah, 6 hari tidak aktif) |
-| `/dashboard/child/demo-bima` | Kondisi kosong (belum skrining) |
-| `/dashboard/compare` | Perbandingan dua anak |
-| `/child/demo-rizky` | Dasbor anak dengan progres lokal dan akses aktivitas |
-| `/child/demo-rizky/belajar` | Beranda modul belajar |
-| `/child/demo-rizky/belajar/latihan/menulis` | Latihan menulis |
-| `/child/demo-rizky/belajar/latihan/membaca` | Latihan membaca |
+| Alamat                                      | Isi                                                  |
+| ------------------------------------------- | ---------------------------------------------------- |
+| `/`                                         | Beranda                                              |
+| `/screening/demo`                           | Tes demo, hasilnya langsung tampil                   |
+| `/dashboard`                                | Ringkasan tiga anak contoh                           |
+| `/dashboard/child/demo-rizky`               | Dasbor anak (kasus eskalasi ke Risiko Tinggi)        |
+| `/dashboard/child/demo-rizky/screening`     | Laporan skrining lengkap                             |
+| `/dashboard/child/demo-nadia`               | Dasbor anak (Risiko Rendah, 6 hari tidak aktif)      |
+| `/dashboard/child/demo-bima`                | Kondisi kosong (belum skrining)                      |
+| `/dashboard/compare`                        | Perbandingan dua anak                                |
+| `/child/demo-rizky`                         | Dasbor anak dengan progres lokal dan akses aktivitas |
+| `/child/demo-rizky/belajar`                 | Beranda modul belajar                                |
+| `/child/demo-rizky/belajar/latihan/menulis` | Latihan menulis                                      |
+| `/child/demo-rizky/belajar/latihan/membaca` | Latihan membaca                                      |
 
 > Tautan ke `/dashboard` belum ada di navbar. Buka lewat alamat di atas.
 
@@ -192,15 +197,15 @@ Schema, RPC PIN dan bucket ilustrasi privat sudah terpasang pada project `xnlnzd
 
 1. Salin `.env.example` menjadi `.env.local` lalu isi:
 
-   | Variabel | Fungsi |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Kunci anon |
-   | `PARENT_UNLOCK_SECRET` | **Wajib di produksi.** Menandatangani cookie buka-kunci (min. 16 karakter). Kosong di produksi = dasbor tidak terbuka |
-   | `SUPABASE_SERVICE_ROLE_KEY` | Hanya untuk cron email. Melewati RLS, jangan di-commit |
-   | `CRON_SECRET` | Melindungi `/api/cron/notifications` |
-   | `RESEND_API_KEY`, `EMAIL_FROM` | Pengiriman email. Tanpa ini cron hanya *dry-run* |
-   | `NEXT_PUBLIC_SITE_URL` | Tautan di dalam email |
+   | Variabel                        | Fungsi                                                                                                                |
+   | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+   | `NEXT_PUBLIC_SUPABASE_URL`      | URL project Supabase                                                                                                  |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Kunci anon                                                                                                            |
+   | `PARENT_UNLOCK_SECRET`          | **Wajib di produksi.** Menandatangani cookie buka-kunci (min. 16 karakter). Kosong di produksi = dasbor tidak terbuka |
+   | `SUPABASE_SERVICE_ROLE_KEY`     | Hanya untuk cron email. Melewati RLS, jangan di-commit                                                                |
+   | `CRON_SECRET`                   | Melindungi `/api/cron/notifications`                                                                                  |
+   | `RESEND_API_KEY`, `EMAIL_FROM`  | Pengiriman email. Tanpa ini cron hanya _dry-run_                                                                      |
+   | `NEXT_PUBLIC_SITE_URL`          | Tautan di dalam email                                                                                                 |
 
    Buat secret acak dengan:
 
@@ -210,47 +215,55 @@ Schema, RPC PIN dan bucket ilustrasi privat sudah terpasang pada project `xnlnzd
 
 2. Jalankan migrasi di SQL Editor Supabase, **berurutan**:
 
-   | Berkas | Isi |
-   |---|---|
-   | `0000_children.sql` | Profil anak. **Lewati bila tabel `children` sudah ada** |
-   | `0001_screening_sessions.sql` | Sesi skrining |
-   | `0002_learning_tracking.sql` | Riwayat belajar, kuis, latihan, validitas sesi |
-   | `0003_notifications.sql` | Status baca notifikasi dan log email |
+   | Berkas                                            | Isi                                                            |
+   | ------------------------------------------------- | -------------------------------------------------------------- |
+   | `0000_children.sql`                               | Profil anak. **Lewati bila tabel `children` sudah ada**        |
+   | `0001_screening_sessions.sql`                     | Sesi skrining                                                  |
+   | `0002_learning_tracking.sql`                      | Riwayat belajar, kuis, latihan, validitas sesi                 |
+   | `0003_notifications.sql`                          | Status baca notifikasi dan log email                           |
    | `20261004100821_parent_child_auth_curriculum.sql` | Parent profiles, RPC PIN, kurikulum, progres, cache dan bucket |
-   | `20261004101050_optimize_family_rls.sql` | Optimasi policy RLS dan indeks relasi |
+   | `20261004101050_optimize_family_rls.sql`          | Optimasi policy RLS dan indeks relasi                          |
 
    Semuanya aman dijalankan ulang. Opsional untuk pengembangan: `supabase/seed/dev_learning_seed.sql` (jangan di produksi).
 
+## Audio Bahasa Indonesia
+
+- Seluruh pembacaan memakai `lib/speech/indonesian.ts`, dengan pembatalan permintaan lama dan pemilihan suara Indonesia secara eksplisit.
+- Enam belas kata tes mempunyai berkas WAV Indonesia di `public/audio/id`, sehingga stimulus tes tetap tersedia saat perangkat tidak mempunyai suara Indonesia. Berkas ini dibuat dengan suara Damayanti (`id_ID`), bukan rekaman manusia. Regenerasi pada macOS: `node scripts/generate-indonesian-audio.mjs`.
+- Audio dinamis menunggu daftar suara browser dimuat. Bila suara Indonesia tidak tersedia, aplikasi memberi pesan dan tidak beralih ke suara bahasa lain.
+- Pilihan pada tes bunyi awal dan ejaan dibuka setelah audio selesai diputar. Tes bunyi awal menyertakan contoh: susu dan sapu memiliki bunyi awal yang sama. Tes ejaan menyertakan tulisan yang sama dengan kata audio.
+- Bank soal dan keberadaan berkas audio diuji otomatis. Pelafalan suara sintetis serta kesesuaian stimulus tetap perlu ditinjau bersama penutur Indonesia dan pendamping anak.
+
 ## Perintah
 
-| Perintah | Fungsi |
-|---|---|
-| `npm run dev` | Server pengembangan |
-| `npm run build` / `npm start` | Build dan jalankan produksi |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | Pemeriksaan tipe |
-| `npm test` | Vitest: skor, rekomendasi, metrik, kunci dasbor, middleware, notifikasi, dan **migrasi + RLS di Postgres in-process** |
-| `npm run export:review` | Ekspor teks rekomendasi untuk psikolog |
+| Perintah                      | Fungsi                                                                                                                |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                 | Server pengembangan                                                                                                   |
+| `npm run build` / `npm start` | Build dan jalankan produksi                                                                                           |
+| `npm run lint`                | ESLint                                                                                                                |
+| `npm run typecheck`           | Pemeriksaan tipe                                                                                                      |
+| `npm test`                    | Vitest: skor, rekomendasi, metrik, kunci dasbor, middleware, notifikasi, dan **migrasi + RLS di Postgres in-process** |
+| `npm run export:review`       | Ekspor teks rekomendasi untuk psikolog                                                                                |
 
 ## Rute Utama
 
-| Alamat | Pengguna | Keterangan |
-|---|---|---|
-| `/`, `/cara-kerja`, `/tentang`, `/faq`, `/kontak` | Publik | Halaman informasi |
-| `/privasi`, `/syarat`, `/disclaimer` | Publik | Legal dan disclaimer medis |
-| `/login`, `/daftar` | Orang tua | Masuk dan daftar (persetujuan wajib) |
-| `/auth/callback` | Orang tua | Konfirmasi email PKCE/token hash |
-| `/masuk-anak` | Anak | Pilih avatar dan verifikasi PIN |
-| `/unlock` | Orang tua | Kata sandi ulang untuk membuka dasbor |
-| `/dashboard` | Orang tua | Ringkasan dan notifikasi |
-| `/dashboard/child/new` | Orang tua | Tambah profil anak |
-| `/dashboard/child/[id]` | Orang tua | Dasbor anak |
-| `/dashboard/child/[id]/screening` | Orang tua | Laporan skrining (`?s=<id>` untuk sesi lama) |
-| `/dashboard/compare` | Orang tua | Perbandingan dua anak |
-| `/screening/[childId]` | Anak | Empat permainan (tanpa menampilkan hasil) |
-| `/child/[childId]` | Anak | Beranda anak |
-| `/child/[childId]/belajar` | Anak | Modul belajar; latihan di bawah `/latihan/*` dan materi di bawah `/materi/*` |
-| `GET /api/cron/notifications` | Cron | Butuh `Authorization: Bearer $CRON_SECRET` |
+| Alamat                                            | Pengguna  | Keterangan                                                                   |
+| ------------------------------------------------- | --------- | ---------------------------------------------------------------------------- |
+| `/`, `/cara-kerja`, `/tentang`, `/faq`, `/kontak` | Publik    | Halaman informasi                                                            |
+| `/privasi`, `/syarat`, `/disclaimer`              | Publik    | Legal dan disclaimer medis                                                   |
+| `/login`, `/daftar`                               | Orang tua | Masuk dan daftar (persetujuan wajib)                                         |
+| `/auth/callback`                                  | Orang tua | Konfirmasi email PKCE/token hash                                             |
+| `/masuk-anak`                                     | Anak      | Pilih avatar dan verifikasi PIN                                              |
+| `/unlock`                                         | Orang tua | Kata sandi ulang untuk membuka dasbor                                        |
+| `/dashboard`                                      | Orang tua | Ringkasan dan notifikasi                                                     |
+| `/dashboard/child/new`                            | Orang tua | Tambah profil anak                                                           |
+| `/dashboard/child/[id]`                           | Orang tua | Dasbor anak                                                                  |
+| `/dashboard/child/[id]/screening`                 | Orang tua | Laporan skrining (`?s=<id>` untuk sesi lama)                                 |
+| `/dashboard/compare`                              | Orang tua | Perbandingan dua anak                                                        |
+| `/screening/[childId]`                            | Anak      | Empat permainan (tanpa menampilkan hasil)                                    |
+| `/child/[childId]`                                | Anak      | Beranda anak                                                                 |
+| `/child/[childId]/belajar`                        | Anak      | Modul belajar; latihan di bawah `/latihan/*` dan materi di bawah `/materi/*` |
+| `GET /api/cron/notifications`                     | Cron      | Butuh `Authorization: Bearer $CRON_SECRET`                                   |
 
 ## Batasan yang Diakui
 
@@ -259,10 +272,10 @@ Schema, RPC PIN dan bucket ilustrasi privat sudah terpasang pada project `xnlnzd
 - Daftar tenaga profesional sengaja kosong sampai diverifikasi; sementara itu laporan menampilkan panduan umum mencari bantuan.
 - Database/RLS dan verifikasi PIN telah diuji pada project Supabase Eja dalam transaksi rollback. Pengiriman email konfirmasi belum diuji end-to-end.
 - Versi pertama membutuhkan internet; ekspor/hapus data akun belum tersedia.
-- Progres modul belajar masih di `localStorage` per anak dan browser. Tabel `learning_sessions`, `quiz_results`, dan `practice_results` belum diisi oleh modul ini; penyambungan ke dasbor orang tua adalah pekerjaan berikutnya.
+- Progres modul belajar dan catatan bantuan masih di `localStorage` per anak dan browser. Catatan bantuan dapat dibaca orang tua pada browser yang sama; belum tersedia lintas perangkat. Tabel `learning_sessions`, `quiz_results`, dan `practice_results` belum diisi oleh modul ini; sinkronisasi ke tabel monitoring Supabase adalah pekerjaan berikutnya.
 
 ## Tim
 
-Dibuat untuk **JOINTS UGM 2026** oleh tim EJA. Daftar anggota ada di halaman [`/tentang`](app/(site)/tentang/page.tsx).
+Dibuat untuk **JOINTS UGM 2026** oleh tim EJA. Daftar anggota ada di halaman [`/tentang`](<app/(site)/tentang/page.tsx>).
 
 Repositori: <https://github.com/LVNAx/EJA>

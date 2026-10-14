@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { ROUTES } from "@/lib/routes";
 
 const COLS = [
   { title: "EJA", links: [{ href: "/cara-kerja", label: "Cara Kerja" }, { href: "/tentang", label: "Tentang Kami" }, { href: "/faq", label: "FAQ" }, { href: "/kontak", label: "Kontak" }] },
-  { title: "Coba", links: [{ href: "/screening/demo", label: "Tes demo" }, { href: "/login", label: "Masuk" }, { href: "/daftar", label: "Daftar orang tua" }] },
+  { title: "Coba", links: [{ href: ROUTES.learningDemo, label: "Coba Belajar" }, { href: "/screening/demo", label: "Coba Skrining" }, { href: "/login", label: "Masuk" }, { href: "/daftar", label: "Daftar orang tua" }] },
   { title: "Legal", links: [{ href: "/disclaimer", label: "Disclaimer medis" }, { href: "/privasi", label: "Kebijakan privasi" }, { href: "/syarat", label: "Syarat & ketentuan" }] },
 ];
 

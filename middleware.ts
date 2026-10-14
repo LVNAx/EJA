@@ -1,9 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { UNLOCK_COOKIE, signUnlock, unlockCookieOptions, verifyUnlock } from "@/lib/auth/unlock";
+import {
+  UNLOCK_COOKIE,
+  signUnlock,
+  unlockCookieOptions,
+  verifyUnlock,
+} from "@/lib/auth/unlock";
+import {
+  CHILD_COOKIE,
+  childLoginHref,
+  isChildId,
+  verifyChildSession,
+} from "@/lib/auth/child-session";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Tanpa Supabase (mode demo) tidak ada yang dijaga.
-const configured = () => Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+const configured = isSupabaseConfigured;
 
 export async function middleware(request: NextRequest) {
   if (!configured()) return NextResponse.next();
@@ -14,18 +26,51 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = path;
     url.search = new URLSearchParams(params).toString();
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    const refreshed = response();
+    refreshed.cookies
+      .getAll()
+      .forEach((cookie) => redirect.cookies.set(cookie));
+    redirect.headers.set("cache-control", "private, no-store");
+    return redirect;
   };
 
   // Sudah login: tidak perlu melihat halaman masuk/daftar lagi.
-  if (user && (pathname === "/login" || pathname === "/daftar")) return redirectTo("/dashboard");
+  if (user && (pathname === "/login" || pathname === "/daftar")) {
+    return redirectTo(
+      (await verifyUnlock(request.cookies.get(UNLOCK_COOKIE)?.value, user.id))
+        ? "/dashboard"
+        : "/masuk-anak",
+    );
+  }
+
+  const childId = /^\/(?:child|screening)\/([^/]+)/.exec(pathname)?.[1];
+  if (childId && isChildId(childId)) {
+    if (!user)
+      return redirectTo("/login", {
+        next: childLoginHref(childId, pathname + search),
+      });
+    if (
+      !(await verifyChildSession(
+        request.cookies.get(CHILD_COOKIE)?.value,
+        user.id,
+        childId,
+      ))
+    ) {
+      return redirectTo("/masuk-anak", {
+        child: childId,
+        next: pathname + search,
+      });
+    }
+  }
 
   if (pathname.startsWith("/dashboard")) {
     if (!user) return redirectTo("/login", { next: pathname + search });
 
     // Dasbor butuh bukti kedua selain sesi: cookie buka-kunci (lihat lib/auth/unlock.ts).
     const token = request.cookies.get(UNLOCK_COOKIE)?.value;
-    if (!(await verifyUnlock(token, user.id))) return redirectTo("/unlock", { next: pathname + search });
+    if (!(await verifyUnlock(token, user.id)))
+      return redirectTo("/unlock", { next: pathname + search });
 
     // Masa berlaku diperpanjang selama orang tua aktif.
     const res = response();
@@ -39,5 +84,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Semua jalur kecuali berkas statis dan gambar.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };

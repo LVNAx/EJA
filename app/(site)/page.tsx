@@ -4,11 +4,12 @@ import { YoutubeEmbed } from "@/components/site/YoutubeEmbed";
 import { Reveal } from "@/components/site/Reveal";
 import { Section } from "@/components/site/Section";
 import { Showcase } from "@/components/site/Showcase";
+import { ROUTES } from "@/lib/routes";
 
 const MODULES = [
   { Icon: ClipboardCheck, tag: "Modul 1 · Orang tua & anak", title: "Skrining", text: "Empat permainan singkat yang mengukur kemampuan dasar membaca, dikerjakan anak dalam sekitar 8 menit.", href: "/cara-kerja" },
   { Icon: Stethoscope, tag: "Modul 2 · Orang tua", title: "Rekomendasi", text: "Level risiko dengan saran yang jelas: apa yang bisa dilakukan di rumah, di sekolah, dan kapan menemui profesional.", href: "/cara-kerja" },
-  { Icon: BookOpen, tag: "Modul 3 · Anak", title: "Belajar", text: "Materi SD yang dipecah kecil, dengan gambar, suara, dan kuis singkat di setiap langkah.", href: "/tentang" },
+  { Icon: BookOpen, tag: "Modul 3 · Anak", title: "Belajar", text: "Coba membaca per suku kata, menulis huruf dan angka, serta dua materi matematika.", href: ROUTES.learningDemo },
 ];
 
 const PAIN = [
@@ -58,11 +59,11 @@ export default function HomePage() {
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <div className="group relative rounded-full p-[2px]">
             <div aria-hidden="true" className="absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_farthest-side_at_0_100%,#A855F7,transparent),radial-gradient(circle_farthest-side_at_100%_0,#FF8C61,transparent),radial-gradient(circle_farthest-side_at_100%_100%,#A855F7,transparent),radial-gradient(circle_farthest-side_at_0_0,#FF8C61,transparent)] opacity-60 blur-xl transition duration-500 group-hover:opacity-100" />
-            <Link href="/daftar" className="btn-primary relative z-10 !px-8 !py-4"><Zap size={20} className="fill-current" /> Mulai Tes Sekarang</Link>
+            <Link href={ROUTES.learningDemo} className="btn-primary relative z-10 !px-8 !py-4"><BookOpen size={20} /> Coba Belajar</Link>
           </div>
-          <Link href="/screening/demo" className="btn-ghost !px-6 !py-4 !text-lg">Coba tes demo <ArrowRight size={18} /></Link>
+          <Link href="/screening/demo" className="btn-ghost !px-6 !py-4 !text-lg">Coba Skrining <ArrowRight size={18} /></Link>
         </div>
-        <p className="mt-5 text-sm text-neutral-500">Hasil skrining bukan diagnosis medis.</p>
+        <p className="mt-5 text-sm text-neutral-500">Demo tanpa akun. Hasil skrining bukan diagnosis medis.</p>
 
         <Reveal className="mt-12 w-full max-w-3xl">
           <YoutubeEmbed id="6jGuyJDMsUI" />
