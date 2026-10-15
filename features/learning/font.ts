@@ -6,6 +6,6 @@ export const openDyslexic = localFont({
     { path: "./fonts/OpenDyslexic-Bold.woff2", weight: "700", style: "normal" },
   ],
   display: "swap",
-  preload: false,
+  preload: true,
   variable: "--font-open-dyslexic",
 });

@@ -7,8 +7,8 @@ import { Showcase } from "@/components/site/Showcase";
 import { ROUTES } from "@/lib/routes";
 
 const MODULES = [
-  { Icon: ClipboardCheck, tag: "Modul 1 · Orang tua & anak", title: "Skrining", text: "Empat permainan singkat yang mengukur kemampuan dasar membaca, dikerjakan anak dalam sekitar 8 menit.", href: "/cara-kerja" },
-  { Icon: Stethoscope, tag: "Modul 2 · Orang tua", title: "Rekomendasi", text: "Level risiko dengan saran yang jelas: apa yang bisa dilakukan di rumah, di sekolah, dan kapan menemui profesional.", href: "/cara-kerja" },
+  { Icon: ClipboardCheck, tag: "Modul 1 · Orang tua & anak", title: "Skrining", text: "Empat kegiatan bersama pendamping: bunyi kata, membaca, menyebut angka, dan dikte.", href: "/cara-kerja" },
+  { Icon: Stethoscope, tag: "Modul 2 · Orang tua", title: "Rekomendasi", text: "Catatan jawaban dan bantuan untuk memilih latihan berikutnya bersama pendamping.", href: "/cara-kerja" },
   { Icon: BookOpen, tag: "Modul 3 · Anak", title: "Belajar", text: "Coba membaca per suku kata, menulis huruf dan angka, serta dua materi matematika.", href: ROUTES.learningDemo },
 ];
 
@@ -27,9 +27,9 @@ const COMPARE = [
 ];
 
 const FAQ = [
-  { q: "Apakah hasil EJA sama dengan diagnosis disleksia?", a: "Tidak. EJA adalah skrining awal. Hanya psikolog klinis atau dokter anak tumbuh kembang yang dapat menegakkan diagnosis." },
+  { q: "Apakah hasil EJA sama dengan diagnosis disleksia?", a: "Tidak. Tes versi baru mencatat jawaban dan bantuan, tanpa menghasilkan diagnosis atau tingkat risiko disleksia." },
   { q: "Untuk anak usia berapa?", a: "Siswa SD kelas 1–6, sekitar usia 6–12 tahun." },
-  { q: "Berapa lama tesnya?", a: "Sekitar 8 menit untuk 4 permainan singkat." },
+  { q: "Berapa lama tesnya?", a: "Empat kegiatan singkat dengan waktu sesuai kecepatan anak." },
   { q: "Apakah suara anak direkam?", a: "Tes skrining tidak merekam suara. EJA tidak mengunggah rekaman suara ke server." },
 ];
 
@@ -54,7 +54,7 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="mt-8 max-w-2xl text-lg text-neutral-600 md:text-xl">
-          EJA mengenali tanda awal lewat 4 permainan singkat, lalu menemani anak belajar dengan materi yang visual, bertahap, dan konkret. Untuk siswa SD, dalam Bahasa Indonesia.
+          EJA membantu mencatat kemampuan lewat empat kegiatan singkat, lalu menemani anak belajar dengan materi yang visual, bertahap, dan konkret. Untuk siswa SD, dalam Bahasa Indonesia.
         </p>
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
           <div className="group relative rounded-full p-[2px]">

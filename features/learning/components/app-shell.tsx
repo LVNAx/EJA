@@ -13,8 +13,11 @@ import {
 } from "@/features/learning/state/store";
 import { Icon } from "./icons";
 import { DEMO_CHILD_ID, ROUTES } from "@/lib/routes";
+import { FontSelector } from "@/components/accessibility/FontSelector";
+import { useFontPreference } from "@/lib/accessibility/font-preference";
 
 function SettingsPanel({ onClose }: { onClose: () => void }) {
+  const font = useFontPreference();
   const { settings } = useAppState();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -76,7 +79,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
             Jenis huruf<small>Pilih yang paling nyaman untukmu</small>
           </span>
           <select
-            value={settings.fontFamily}
+            value={font}
             onChange={(event) =>
               updateSettings({
                 fontFamily: event.target.value as "standard" | "opendyslexic",
@@ -186,7 +189,7 @@ export function AppShell({
     <MotionConfig reducedMotion={settings.reducedMotion ? "always" : "user"}>
       <div
         data-reduce-motion={settings.reducedMotion}
-        className={`site-shell text-${settings.textSize} font-${settings.fontFamily}`}
+        className={`site-shell text-${settings.textSize}`}
       >
         <header className="site-header">
           <div className="container header-inner">
@@ -266,6 +269,7 @@ export function AppShell({
               </Link>
             </nav>
             <div className="header-actions">
+              <FontSelector />
               <span className="header-xp">
                 <Icon name="star" size={17} />
                 {totalXp} bintang
@@ -304,6 +308,7 @@ export function AppShell({
             <span>
               <strong>EJA</strong> · Belajar sedikit demi sedikit.
             </span>
+            <Link className="progress-link" href={learningHref(childId, "/perkembangan")}>Perkembangan belajar</Link>
             <span>
               {streak > 0
                 ? `${streak} hari belajar beruntun ✨`

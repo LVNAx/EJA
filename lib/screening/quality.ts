@@ -30,10 +30,11 @@ export function evaluateSessionQuality(t: ResponseTimings): SessionQuality {
     }
   }
   const fastShare = counted === 0 ? 0 : fast / counted;
-  const valid = fastShare <= SCREENING_CONFIG.quality.maxFastShare;
+  const complete = t.phonological.length === 8 && t.spelling.length === 8 && t.rapidNaming.length <= 12 && counted === t.phonological.length + t.spelling.length + t.rapidNaming.length;
+  const valid = complete && fastShare <= SCREENING_CONFIG.quality.maxFastShare;
   return {
     valid,
-    reason: valid ? null : "Terlalu banyak jawaban yang sangat cepat, sehingga sepertinya jawaban diberikan tanpa mendengarkan atau melihat soal dengan saksama.",
+    reason: valid ? null : !complete ? "Catatan waktu jawaban belum lengkap. Sesi belum bisa dinilai." : "Terlalu banyak jawaban yang sangat cepat. Sesi perlu dicoba kembali.",
     fastShare,
     counted,
   };

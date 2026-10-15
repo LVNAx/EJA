@@ -6,6 +6,7 @@ import { Logo } from "@/components/site/Logo";
 import { signOut } from "@/lib/auth/actions";
 import { ROUTES } from "@/lib/routes";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { FontSelector } from "@/components/accessibility/FontSelector";
 
 export const metadata: Metadata = { title: "Dasbor Orang Tua", robots: { index: false } };
 
@@ -17,12 +18,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <>
       <AuroraBackground />
-      <header className="no-print mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
+      <header className="no-print mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5">
         <div className="flex items-center gap-4">
           <Logo />
           <span className="hidden rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-600 sm:inline">Dasbor orang tua</span>
         </div>
-        <nav aria-label="Dasbor" className="flex items-center gap-1 text-sm font-semibold">
+        <nav aria-label="Dasbor" className="ml-auto flex flex-wrap items-center justify-end gap-1 text-sm font-semibold">
+          <FontSelector />
           <Link href={ROUTES.dashboard} className="rounded-full px-4 py-2 hover:bg-white/70">Ringkasan</Link>
           {!demo && <form action={signOut}><button type="submit" className="rounded-full px-4 py-2 text-neutral-600 hover:bg-white/70 hover:text-ink">Keluar</button></form>}
         </nav>

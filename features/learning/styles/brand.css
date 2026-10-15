@@ -1,5 +1,5 @@
 /* Scoped learning module styles; the public site keeps its own theme. */
-/* Visual language shared with the EJA site: violet, coral, soft glass, and Outfit. */
+/* Visual language shared with the EJA site: violet, coral, and soft glass. */
 .learning-root {
   --cream: #ffffff;
   --paper: #ffffff;
@@ -32,7 +32,7 @@
     #ffffff;
   background-attachment: fixed;
   color: var(--ink);
-  font-family: var(--font-outfit), Arial, sans-serif;
+  font-family: var(--font-ui), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -41,10 +41,6 @@
 .learning-root select:focus-visible,
 .learning-root input:focus-visible {
   outline-color: var(--brand-500);
-}
-
-.learning-root .site-shell.font-opendyslexic {
-  font-family: var(--font-open-dyslexic), Arial, sans-serif;
 }
 
 .learning-root .site-header {
@@ -127,6 +123,16 @@
   border-color: var(--brand-200);
   background: #ffffffba;
   color: var(--muted);
+}
+
+.learning-root .footer-inner {
+  flex-wrap: wrap;
+  padding-block: 12px;
+}
+.learning-root .footer-inner > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .learning-root .footer-inner strong,
@@ -801,4 +807,34 @@
   color: #7e22ce;
   font-weight: 700;
   text-decoration: underline;
+}
+
+/* Keep the font choice visible on narrow screens; navigation uses a second row. */
+@media (max-width: 1000px) {
+  .learning-root .header-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+    border-radius: 24px;
+  }
+  .learning-root .header-actions { margin-left: auto; }
+  .learning-root .header-xp { display: none; }
+  .learning-root .top-nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+@media (max-width: 650px) {
+  .learning-root .brand { gap: 6px; }
+  .learning-root .font-selector select { font-size: 13px; }
+}
+
+.learning-root .overview-row > * { min-width: 0; }
+.learning-root .overview-intro,
+.learning-root .hero-copy h1 { overflow-wrap: anywhere; }
+@media (max-width: 650px) {
+  .learning-root .overview-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 450px) {
+  .learning-root .stat-card { flex-direction: column; align-items: flex-start; }
 }

@@ -8,6 +8,7 @@ export interface Reference {
 
 // Daftar pustaka landasan EJA. Nomor dipakai sebagai kutipan [n] di halaman Tentang.
 export const REFERENCES: Reference[] = [
+  { id: 22, authors: "International Dyslexia Association", year: "2023", title: "IDA Assessment Guidelines", source: "https://dyslexiaida.org/dyslexia-literacy-assessment-guidelines/" },
   { id: 1, authors: "Lyon, G. R., Shaywitz, S. E., & Shaywitz, B. A.", year: "2003", title: "A definition of dyslexia", source: "Annals of Dyslexia, 53, 1–14" },
   { id: 2, authors: "Peterson, R. L., & Pennington, B. F.", year: "2012", title: "Developmental dyslexia", source: "The Lancet, 379(9830), 1997–2007" },
   { id: 3, authors: "Melby-Lervåg, M., Lyster, S.-A. H., & Hulme, C.", year: "2012", title: "Phonological skills and their role in learning to read: A meta-analytic review", source: "Psychological Bulletin, 138(2), 322–352" },
@@ -51,11 +52,11 @@ export const BASIS: BasisGroup[] = [
     title: "Landasan skrining",
     intro: "Empat tes dipilih karena masing-masing berkaitan dengan kemampuan yang konsisten ditemukan berbeda pada anak dengan disleksia.",
     items: [
-      { title: "Kesadaran bunyi (bobot 35%)", eja: "Anak memilih gambar yang bunyi awalnya sama dengan kata yang didengar.", evidence: "Kemampuan fonologis merupakan salah satu prediktor terkuat keberhasilan belajar membaca, dan kesulitan fonologis adalah ciri inti disleksia.", refs: [1, 3] },
-      { title: "Penamaan cepat (bobot 30%)", eja: "Anak mengenali huruf yang muncul secepat mungkin; skor memperhitungkan kecepatan dan ketepatan.", evidence: "Kecepatan penamaan membedakan anak disleksia dari anak lain, dan menjadi komponen kedua dalam hipotesis defisit ganda.", refs: [4, 5] },
-      { title: "Ketepatan ejaan (bobot 20%)", eja: "Anak memilih ejaan yang benar dari kata yang didengar.", evidence: "Pada ortografi alfabetis, kemampuan menghubungkan bunyi dan huruf ikut memprediksi perkembangan literasi.", refs: [9, 8] },
-      { title: "Memori kerja (bobot 15%)", eja: "Anak mengulang urutan angka yang bertambah panjang.", evidence: "Keterbatasan memori kerja verbal sering dilaporkan pada kesulitan membaca, walau lebih lemah dibanding prediktor fonologis.", refs: [10] },
-      { title: "Fokus pada kelancaran, bukan huruf tertukar", eja: "Skrining memberi bobot pada kecepatan dan ketepatan, tidak pada pembalikan huruf (b/d).", evidence: "Pada ortografi yang transparan seperti Bahasa Indonesia, hambatan utama cenderung berupa membaca lambat dan terputus, bukan kesalahan pengenalan huruf.", refs: [6, 7, 8] },
+      { title: "Bunyi kata", eja: "Anak memilih gambar yang bunyi awalnya sama dengan kata yang didengar.", evidence: "Kemampuan fonologis merupakan salah satu prediktor terkuat keberhasilan belajar membaca, dan kesulitan fonologis adalah ciri inti disleksia.", refs: [1, 3] },
+      { title: "Penyebutan angka berurutan", eja: "Anak menyebut angka berurutan secara lisan; waktu dan kesalahan dicatat terpisah oleh pendamping.", evidence: "Kecepatan penamaan membedakan anak disleksia dari anak lain, dan menjadi komponen kedua dalam hipotesis defisit ganda.", refs: [4, 5] },
+      { title: "Dikte ejaan", eja: "Anak mengetik kata yang didengar tanpa pilihan jawaban.", evidence: "Pada ortografi alfabetis, kemampuan menghubungkan bunyi dan huruf ikut memprediksi perkembangan literasi.", refs: [9, 8] },
+      { title: "Membaca kata dan kata rekaan", eja: "Anak membaca kata, kata rekaan, dan menjawab pertanyaan bacaan; ucapan dicatat pendamping.", evidence: "Pedoman asesmen mencakup pengenalan kata, decoding kata rekaan, kelancaran, dan pemahaman bacaan.", refs: [22] },
+      { title: "Fokus pada kelancaran, bukan huruf tertukar", eja: "Tes baru mencatat ketepatan dan waktu secara terpisah; tidak menggunakan bobot risiko.", evidence: "Pada ortografi yang transparan seperti Bahasa Indonesia, hambatan utama cenderung berupa membaca lambat dan terputus, bukan kesalahan pengenalan huruf.", refs: [6, 7, 8] },
     ],
   },
   {
@@ -63,9 +64,9 @@ export const BASIS: BasisGroup[] = [
     title: "Landasan rekomendasi",
     intro: "Rekomendasi disusun sebagai panduan komunikasi untuk orang tua, bukan hasil klinis.",
     items: [
-      { title: "Tiga tingkat risiko", eja: "Risiko rendah, sedang, dan tinggi dipetakan secara longgar ke tingkat ringan, sedang, dan berat pada Specific Learning Disorder.", evidence: "Kerangka DSM-5 membedakan keparahan kesulitan belajar spesifik dalam tiga tingkat. Pemetaan EJA hanya analogi untuk menjelaskan hasil; penetapan tingkat keparahan sebenarnya memerlukan asesmen profesional.", refs: [11] },
+      { title: "Catatan tanpa tingkat risiko", eja: "Protokol baru belum memiliki norma usia dan tidak memberikan tingkat risiko atau keparahan. Catatan jawaban menjadi bahan diskusi dengan profesional.", evidence: "Asesmen memerlukan informasi perkembangan dan pengukuran kemampuan literasi dalam konteks anak. Catatan prototipe belum menggantikan proses tersebut.", refs: [22] },
       { title: "“Ini bukan soal kecerdasan”", eja: "Setiap hasil menekankan bahwa kesulitan membaca tidak menunjukkan rendahnya kecerdasan anak.", evidence: "Disleksia didefinisikan sebagai kesulitan belajar spesifik yang tidak sebanding dengan kemampuan kognitif lain.", refs: [1, 2] },
-      { title: "Rujukan ke profesional", eja: "Level sedang dan tinggi selalu disertai saran konsultasi ke guru, psikolog klinis, atau dokter anak tumbuh kembang.", evidence: "Disleksia dipahami sebagai spektrum tanpa batas yang tegas, sehingga keputusan klinis memerlukan penilaian menyeluruh.", refs: [12] },
+      { title: "Rujukan ke profesional", eja: "Kesulitan berulang dibahas dengan guru dan tenaga profesional, disertai catatan kegiatan yang benar-benar diamati.", evidence: "Disleksia dipahami sebagai spektrum tanpa batas yang tegas, sehingga keputusan klinis memerlukan penilaian menyeluruh.", refs: [12] },
       { title: "Saran latihan rutin", eja: "Orang tua diarahkan pada latihan bunyi dan membaca yang terstruktur.", evidence: "Dalam meta-analisis uji acak terkontrol, pengajaran fonik adalah pendekatan dengan efek paling konsisten untuk kesulitan membaca.", refs: [13] },
     ],
   },

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RiskLevel } from "@/lib/screening/scoring";
+import { assessmentRecordSchema } from "@/lib/screening/assessment";
 import type { ChildData, ChildProfile, LearningSessionRecord, PracticeRecord, QuizRecord, ScreeningRecord } from "./types";
 
 // Tidak mengimpor next/headers: dipakai bersama oleh dasbor (klien sesi, RLS) dan cron email (klien service).
@@ -52,11 +53,12 @@ export async function fetchChildData(supabase: SupabaseClient, profiles: ChildPr
   const ids = profiles.map((p) => p.id);
   const since = new Date(now - LEARNING_WINDOW_DAYS * 86_400_000).toISOString();
 
-  const [scr, ses, quiz, prac] = await Promise.all([
+  const [scr, ses, quiz, prac, assessments] = await Promise.all([
     supabase.from("screening_sessions").select("*").in("child_id", ids).order("completed_at", { ascending: false }).limit(50 * ids.length),
     supabase.from("learning_sessions").select("id, child_id, lesson_id, started_at, ended_at, xp, lessons(subject, unit, title)").in("child_id", ids).gte("started_at", since).order("started_at", { ascending: false }).limit(ROW_LIMIT),
     supabase.from("quiz_results").select("session_id, child_id, is_correct, attempt, answered_at").in("child_id", ids).gte("answered_at", since).order("answered_at", { ascending: false }).limit(ROW_LIMIT),
     supabase.from("practice_results").select("*").in("child_id", ids).gte("created_at", since).order("created_at", { ascending: false }).limit(ROW_LIMIT),
+    supabase.from("screening_assessments").select("id, child_id, responses, completed_at").in("child_id", ids).order("completed_at", { ascending: false }).limit(10 * ids.length),
   ]);
 
   // Tabel riwayat belajar baru ada setelah migration 0002; sebelum itu bagian ini tampil kosong, bukan error.
@@ -64,6 +66,10 @@ export async function fetchChildData(supabase: SupabaseClient, profiles: ChildPr
 
   return profiles.map((profile) => ({
     profile,
+    assessments: rows(assessments).filter(r => r.child_id === profile.id).flatMap(r => {
+      const result = assessmentRecordSchema.safeParse({ id: r.id, completedAt: r.completed_at, submission: r.responses });
+      return result.success ? [result.data] : [];
+    }),
     screenings: rows(scr).filter((r) => r.child_id === profile.id).map(toScreening),
     sessions: rows(ses).filter((r) => r.child_id === profile.id).map(toSession),
     quizzes: rows(quiz)

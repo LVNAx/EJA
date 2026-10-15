@@ -179,6 +179,7 @@ export default function ReadingPage() {
         <span className="section-kicker">MEMBACA & MENULIS</span>
         <h1>Ayo membaca</h1>
         <p>Dengarkan contoh. Ikuti suku katanya, lalu baca sendiri.</p>
+        <Link className="progress-link" href={learningHref(childId, "/latihan/pola-membaca")}>Coba Eksperimen Pola Membaca dengan kamera · opsional</Link>
       </div>
       <div className="reading-layout">
         <aside className="reading-list">

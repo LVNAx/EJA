@@ -31,6 +31,9 @@ import {
 } from "@/features/learning/state/store";
 import { evidenceStatus } from "@/features/learning/state/evidence";
 import { childSummary } from "@/lib/child/summary";
+import { LearningRecommendation } from "@/features/learning/components/learning-recommendation";
+import { FontSelector } from "@/components/accessibility/FontSelector";
+import { useFontPreference } from "@/lib/accessibility/font-preference";
 
 export function ChildDashboard({
   profile,
@@ -40,6 +43,7 @@ export function ChildDashboard({
   demo: boolean;
 }) {
   const state = useAppState();
+  const font = useFontPreference();
   const saved = useStorageStatus();
   const [now, setNow] = useState<Date | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -75,12 +79,6 @@ export function ChildDashboard({
       className="child-dashboard min-h-screen pb-10"
       data-text-size={state.settings.textSize}
       data-reduce-motion={state.settings.reducedMotion}
-      style={{
-        fontFamily:
-          state.settings.fontFamily === "opendyslexic"
-            ? "var(--font-open-dyslexic), sans-serif"
-            : undefined,
-      }}
     >
       <AuroraBackground paused={state.settings.reducedMotion} />
       <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-5">
@@ -91,7 +89,8 @@ export function ChildDashboard({
         >
           <LogoMark size={38} /> EJA
         </Link>
-        <div className="flex gap-2">
+        <div className="ml-auto flex flex-wrap justify-end gap-2">
+          <FontSelector />
           <button
             aria-expanded={settingsOpen}
             aria-controls="child-settings"
@@ -146,7 +145,7 @@ export function ChildDashboard({
               Jenis huruf
               <select
                 className="rounded-xl border-2 border-brand-200 bg-white p-2"
-                value={state.settings.fontFamily}
+                value={font}
                 onChange={(e) =>
                   updateSettings({
                     fontFamily: e.target.value as "standard" | "opendyslexic",
@@ -268,6 +267,7 @@ export function ChildDashboard({
             </article>
           </div>
         </section>
+        <LearningRecommendation childId={profile.id} />
         <section
           aria-label="Catatan belajarmu"
           className="card flex flex-wrap justify-between gap-4 p-5"

@@ -19,9 +19,9 @@ function SkriningMock() {
 
 function RekomendasiMock() {
   const rows = [
-    { label: "Risiko rendah", note: "Pantau berkala", w: "85%", c: "bg-success" },
-    { label: "Risiko sedang", note: "Latihan rutin + konsultasi guru", w: "58%", c: "bg-accent-500" },
-    { label: "Risiko tinggi", note: "Konsultasi psikolog klinis", w: "30%", c: "bg-red-400" },
+    { label: "Bunyi kata", note: "5 dari 6 sesuai", w: "83%", c: "bg-brand-500" },
+    { label: "Dikte", note: "3 dari 4 sesuai", w: "75%", c: "bg-brand-500" },
+    { label: "Sebut angka", note: "10 dari 12 sesuai", w: "83%", c: "bg-brand-500" },
   ];
   return (
     <div className="space-y-3">
@@ -51,10 +51,10 @@ function BelajarMock() {
 }
 
 function DashboardMock() {
-  const bars = [{ l: "Bunyi", v: 78 }, { l: "Cepat", v: 62 }, { l: "Ejaan", v: 70 }, { l: "Memori", v: 48 }];
+  const bars = [{ l: "Bunyi", v: 78 }, { l: "Baca", v: 62 }, { l: "Angka", v: 70 }, { l: "Dikte", v: 48 }];
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-      <p className="text-sm font-semibold text-neutral-500">Skor per dimensi</p>
+      <p className="text-sm font-semibold text-neutral-500">Contoh catatan kegiatan</p>
       <div className="mt-4 flex h-36 items-end gap-4">
         {bars.map((b) => (
           <div key={b.l} className="flex flex-1 flex-col items-center gap-2">
@@ -68,10 +68,10 @@ function DashboardMock() {
 }
 
 const TABS: { id: string; label: string; Icon: LucideIcon; title: string; text: string; Mock: () => JSX.Element }[] = [
-  { id: "skrining", label: "Skrining", Icon: ClipboardCheck, title: "Skrining yang terasa seperti bermain.", text: "Empat permainan singkat mengukur bunyi, kecepatan, ejaan, dan memori kerja. Tanpa tekanan, tanpa istilah klinis.", Mock: SkriningMock },
-  { id: "rekomendasi", label: "Rekomendasi", Icon: Stethoscope, title: "Hasil yang bisa langsung ditindaklanjuti.", text: "Level risiko disertai saran konkret untuk orang tua dan guru, serta kapan perlu menemui profesional.", Mock: RekomendasiMock },
+  { id: "skrining", label: "Skrining", Icon: ClipboardCheck, title: "Skrining yang terasa seperti bermain.", text: "Bunyi kata, membaca, menyebut angka, dan dikte. Satu kegiatan per layar, bersama pendamping.", Mock: SkriningMock },
+  { id: "rekomendasi", label: "Rekomendasi", Icon: Stethoscope, title: "Hasil yang bisa langsung ditindaklanjuti.", text: "Lihat jawaban yang sesuai, bagian yang belum dinilai, dan bantuan yang digunakan.", Mock: RekomendasiMock },
   { id: "belajar", label: "Belajar", Icon: BookOpen, title: "Materi dipecah, satu konsep per langkah.", text: "Kalimat pendek, gambar yang relevan, suara dengan kata yang disorot, dan latihan mengucapkan suku kata.", Mock: BelajarMock },
-  { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard, title: "Orang tua melihat perkembangannya.", text: "Skor skrining, riwayat belajar, dan hasil kuis terkumpul di satu tempat, siap dibawa ke konsultasi.", Mock: DashboardMock },
+  { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard, title: "Orang tua melihat perkembangannya.", text: "Catatan kegiatan, riwayat belajar, dan hasil kuis terkumpul di satu tempat.", Mock: DashboardMock },
 ];
 
 export function Showcase() {
