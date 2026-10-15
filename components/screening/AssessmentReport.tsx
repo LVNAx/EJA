@@ -1,7 +1,12 @@
+import Link from "next/link";
+import { type AssessmentRecord } from "@/lib/screening/assessment";
 import {
-  buildAssessment,
-  type AssessmentRecord,
-} from "@/lib/screening/assessment";
+  answerScore,
+  buildAssessmentPlan,
+} from "@/lib/screening/learning-plan";
+import { learningHref } from "@/features/learning/paths";
+import { MathResults } from "@/features/learning/components/math-results";
+import { ReadingSessionReport } from "./ReadingSessionReport";
 import {
   DICTATION_ITEMS,
   MEANING_ITEMS,
@@ -9,24 +14,38 @@ import {
   SOUND_ITEMS,
 } from "@/lib/screening/protocol";
 
-export function AssessmentReport({ record }: { record: AssessmentRecord }) {
-  const tasks = buildAssessment(record.submission);
-  const eyes = record.submission.eyeTracking;
+export function AssessmentReport({
+  record,
+  childId,
+}: {
+  record: AssessmentRecord;
+  childId: string;
+}) {
+  const { tasks, next, camera } = buildAssessmentPlan(record);
   return (
     <section className="assessment-report">
       <div className="assessment-card-heading">
         <p className="assessment-kicker">Catatan pendamping · Tes versi 2</p>
         <h1>Hasil kegiatan</h1>
-        <p>Catatan sesi ini membantu menentukan latihan berikutnya.</p>
+        <p>Nilai jawaban membantu memilih latihan berikutnya.</p>
       </div>
       <div className="assessment-result-grid">
         {tasks.map((task) => (
           <article className="assessment-result-card" key={task.key}>
             <h2>{task.title}</h2>
             <p className="assessment-result-number">
-              {task.assessed ? `${task.correct} / ${task.assessed}` : "—"}
+              {answerScore(task) ?? "—"}
             </p>
-            <p>{task.assessed ? "jawaban sesuai" : "Belum dinilai"}</p>
+            <p>
+              {task.assessed
+                ? `dari 100${task.status === "partial" ? " · sementara" : ""}`
+                : "Belum dinilai"}
+            </p>
+            {task.assessed > 0 && (
+              <small>
+                {task.correct} dari {task.assessed} jawaban sesuai
+              </small>
+            )}
             <small>
               {task.assessed} dari {task.total}{" "}
               {task.key === "naming" ? "angka" : "butir"} dinilai
@@ -51,9 +70,62 @@ export function AssessmentReport({ record }: { record: AssessmentRecord }) {
         ))}
       </div>
       <p className="assessment-helper">
-        Bacaan dan penyebutan angka dinilai pendamping. Waktu tidak menentukan
-        benar atau salah.
+        Nilai = jawaban sesuai ÷ butir dinilai × 100. Bagian yang dilewati tidak
+        dianggap salah. Bacaan dan penyebutan angka diperiksa pendamping.
       </p>
+      <section
+        className="assessment-next"
+        aria-label="Latihan berdasarkan hasil tes"
+      >
+        <p className="assessment-kicker">LATIHAN BERIKUTNYA</p>
+        <h2>{next.label}</h2>
+        <p>{next.reason}</p>
+        <p>{next.instruction}</p>
+        <Link
+          className="assessment-primary"
+          href={learningHref(childId, next.path)}
+        >
+          Buka latihan
+        </Link>
+      </section>
+      <ReadingSessionReport record={record} />
+      {camera && !record.submission.readingSession && (
+        <section
+          className="assessment-camera-result"
+          aria-label="Analisis pendukung kamera"
+        >
+          <h2>Jawaban & pengamatan mata</h2>
+          <div className="assessment-two">
+            <div>
+              <span>Nilai membaca</span>
+              <strong>
+                {answerScore(tasks[1]) === null
+                  ? "Belum dinilai"
+                  : `${answerScore(tasks[1])} / 100`}
+              </strong>
+              <small>
+                {tasks[1].correct} sesuai · {tasks[1].assessed} dinilai dari{" "}
+                {tasks[1].total} butir
+              </small>
+            </div>
+            <div>
+              <span>Sinyal mata terekam</span>
+              <strong>{camera.coverage}% waktu</strong>
+              <small>
+                {(camera.observedMs / 1000).toFixed(1).replace(".", ",")} detik
+                · {(camera.missingMs / 1000).toFixed(1).replace(".", ",")} detik
+                tanpa sinyal
+              </small>
+            </div>
+          </div>
+          <p>{camera.advice}</p>
+          <small>
+            Pelacak iris ini belum mengukur kata yang dilihat, kesalahan bacaan,
+            atau perhatian. Nilai dan latihan dipilih dari hasil pengerjaan.
+          </small>
+        </section>
+      )}
+      <MathResults childId={childId} />
       <details className="assessment-evidence">
         <summary>Lihat jawaban dan bantuan</summary>
         <ul>
@@ -108,17 +180,6 @@ export function AssessmentReport({ record }: { record: AssessmentRecord }) {
           })}
         </ul>
       </details>
-      {eyes && eyes.observedMs > 0 && (
-        <details className="assessment-evidence">
-          <summary>Catatan kamera saat membaca</summary>
-          <p>
-            Mata terbaca selama{" "}
-            {Math.round((100 * eyes.trackedMs) / eyes.observedMs)}% dari{" "}
-            {(eyes.observedMs / 1000).toFixed(1)} detik pengamatan. Angka ini
-            hanya menunjukkan ketersediaan pelacakan.
-          </p>
-        </details>
-      )}
       <p className="assessment-disclaimer">
         Catatan ini bukan diagnosis atau tingkat risiko disleksia. Tes belum
         memiliki norma usia.

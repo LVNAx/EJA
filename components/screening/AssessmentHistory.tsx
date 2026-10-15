@@ -37,7 +37,7 @@ export function AssessmentHistory({
           </select>
         </label>
       )}
-      <AssessmentReport record={record} />
+      <AssessmentReport record={record} childId={childId} />
       <p className="assessment-helper">
         {serverRecords.some((r) => r.id === record.id)
           ? "Catatan tersimpan pada akun."

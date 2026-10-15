@@ -9,6 +9,32 @@
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
+.practice-math-results {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.practice-math-results > h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-top: 24px;
+}
+.practice-math-results h3 {
+  font-size: 1.05em;
+  font-weight: 700;
+}
+.practice-math-results .progress-skill-grid {
+  margin-top: 12px;
+}
+.practice-math-results .progress-skill {
+  background: white;
+}
+.practice-math-results p {
+  margin: 10px 0;
+}
+.practice-score strong {
+  font-size: 1.9em;
+  color: #7e22ce;
+}
 .learning-root .progress-report,
 .learning-root .practice-suggestion {
   font-size: calc(16px * var(--text-scale, 1));

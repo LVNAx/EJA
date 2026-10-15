@@ -1,27 +1,66 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   createCameraTracker,
   type Tracker,
+  type TrackerFactory,
 } from "@/features/learning/gaze/camera-tracker";
 import { EyeTrackingPreview } from "@/features/learning/gaze/eye-tracking-preview";
 import { cameraMessage } from "@/features/learning/gaze/camera-error";
 import type { Landmark } from "@/features/learning/gaze/gaze-model";
+import {
+  calibrateIrisNoise,
+  IrisMotionCollector,
+  type IrisMotion,
+  type IrisBaseline,
+} from "@/features/learning/gaze/iris-motion";
 import "@/features/learning/gaze/experiment.css";
 
-export type EyeObservation = { observedMs: number; trackedMs: number };
-export function ReadingTracker({
-  active,
-  onObservation,
-  onLoading,
-}: {
-  active: boolean;
-  onObservation: (stats: EyeObservation) => void;
-  onLoading: (loading: boolean) => void;
-}) {
-  const [phase, setPhase] = useState<"off" | "loading" | "live">("off"),
-    [eyes, setEyes] = useState(false),
+export type EyeObservation = {
+  observedMs: number;
+  trackedMs: number;
+  motion?: IrisMotion;
+};
+export type ReadingTrackerHandle = {
+  finish: () => EyeObservation;
+  reset: () => void;
+};
+export const ReadingTracker = forwardRef<
+  ReadingTrackerHandle,
+  {
+    active: boolean;
+    onObservation: (stats: EyeObservation) => void;
+    onLoading: (loading: boolean) => void;
+    autoStart?: boolean;
+    createTracker?: TrackerFactory;
+    elapsedMs?: () => number;
+  }
+>(function ReadingTracker(
+  {
+    active,
+    onObservation,
+    onLoading,
+    autoStart = false,
+    createTracker = createCameraTracker,
+    elapsedMs,
+  },
+  ref,
+) {
+  const [phase, setPhase] = useState<"off" | "loading" | "baseline" | "live">(
+    "off",
+  );
+  const [eyes, setEyes] = useState(false),
     [message, setMessage] = useState("");
+  const phaseRef = useRef(phase),
+    activeRef = useRef(active);
+  activeRef.current = active;
   const video = useRef<HTMLVideoElement>(null),
     points = useRef<Landmark[]>([]),
     lastFrame = useRef(-Infinity);
@@ -30,9 +69,19 @@ export function ReadingTracker({
     generation = useRef(0);
   const statistics = useRef({ observedMs: 0, trackedMs: 0 });
   const started = useRef<number | null>(null),
-    previous = useRef<number | null>(null);
-  const callbacks = useRef({ onObservation, onLoading });
-  callbacks.current = { onObservation, onLoading };
+    previous = useRef<{ at: number; seen: boolean } | null>(null);
+  const baseline = useRef<{ at: number; frames: number[][] } | null>(null),
+    motion = useRef<IrisMotionCollector | null>(null);
+  const reference = useRef<IrisBaseline | null>(null);
+  const callbacks = useRef({ onObservation, onLoading, elapsedMs });
+  callbacks.current = { onObservation, onLoading, elapsedMs };
+  const snapshot = useCallback(
+    () => ({
+      ...statistics.current,
+      ...(motion.current ? { motion: motion.current.snapshot() } : {}),
+    }),
+    [],
+  );
   const flush = useCallback(() => {
     if (started.current !== null) {
       statistics.current.observedMs += Math.max(
@@ -42,14 +91,13 @@ export function ReadingTracker({
       started.current = null;
     }
     previous.current = null;
-    callbacks.current.onObservation({
-      ...statistics.current,
-      trackedMs: Math.min(
-        statistics.current.trackedMs,
-        statistics.current.observedMs,
-      ),
-    });
-  }, []);
+    motion.current?.pause();
+    statistics.current.trackedMs = Math.min(
+      statistics.current.trackedMs,
+      statistics.current.observedMs,
+    );
+    callbacks.current.onObservation(snapshot());
+  }, [snapshot]);
   const release = useCallback(() => {
     flush();
     generation.current++;
@@ -59,14 +107,40 @@ export function ReadingTracker({
     tracker.current = null;
     points.current = [];
     lastFrame.current = -Infinity;
+    baseline.current = null;
   }, [flush]);
   const stop = useCallback(() => {
     release();
+    phaseRef.current = "off";
     setPhase("off");
     setEyes(false);
     callbacks.current.onLoading(false);
   }, [release]);
-  useEffect(() => () => release(), [release]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      finish: () => {
+        stop();
+        return snapshot();
+      },
+      reset: () => {
+        flush();
+        statistics.current = { observedMs: 0, trackedMs: 0 };
+        motion.current = reference.current
+          ? new IrisMotionCollector(reference.current)
+          : null;
+        callbacks.current.onObservation(snapshot());
+      },
+    }),
+    [stop, snapshot, flush],
+  );
+  useEffect(
+    () => () => {
+      release();
+      phaseRef.current = "off";
+    },
+    [release],
+  );
   useEffect(() => {
     if (active && phase === "live") {
       started.current = performance.now();
@@ -85,28 +159,75 @@ export function ReadingTracker({
       window.removeEventListener("pagehide", stop);
     };
   }, [stop]);
-  const start = async () => {
-    if (!video.current || phase !== "off") return;
+  useEffect(() => {
+    if (phase !== "baseline") return;
+    const timer = setTimeout(() => {
+      baseline.current = null;
+      phaseRef.current = "live";
+      setPhase("live");
+      callbacks.current.onLoading(false);
+      setMessage(
+        "Referensi diam belum cukup. Jawaban tetap bisa dikerjakan; perubahan iris belum akan dinilai.",
+      );
+    }, 10_000);
+    return () => clearTimeout(timer);
+  }, [phase]);
+  const start = useCallback(async () => {
+    if (!video.current || phaseRef.current !== "off") return;
     release();
     setMessage("");
+    motion.current = null;
+    reference.current = null;
+    phaseRef.current = "loading";
     setPhase("loading");
     callbacks.current.onLoading(true);
     const token = generation.current,
       abort = new AbortController();
     controller.current = abort;
     try {
-      const instance = await createCameraTracker(
+      const instance = await createTracker(
         video.current,
         (features, at) => {
           if (token !== generation.current) return;
           setEyes(!!features);
-          if (started.current !== null) {
-            if (previous.current !== null && features)
+          if (phaseRef.current === "baseline") {
+            if (!features) {
+              baseline.current = null;
+              return;
+            }
+            baseline.current ??= { at, frames: [] };
+            baseline.current.frames.push(features);
+            if (at - baseline.current.at >= 2000) {
+              reference.current = calibrateIrisNoise(baseline.current.frames);
+              motion.current = reference.current
+                ? new IrisMotionCollector(reference.current)
+                : null;
+              baseline.current = null;
+              phaseRef.current = "live";
+              setPhase("live");
+              callbacks.current.onLoading(false);
+              if (!reference.current)
+                setMessage(
+                  "Referensi iris belum stabil. Jawaban tetap bisa dinilai.",
+                );
+            }
+            return;
+          }
+          if (started.current !== null && activeRef.current) {
+            const prev = previous.current;
+            if (prev && prev.seen && features)
               statistics.current.trackedMs += Math.min(
                 250,
-                Math.max(0, at - previous.current),
+                Math.max(0, at - prev.at),
               );
-            previous.current = at;
+            previous.current = { at, seen: !!features };
+            motion.current?.push(
+              features,
+              at,
+              callbacks.current.elapsedMs?.() ??
+                statistics.current.observedMs +
+                  Math.max(0, at - started.current),
+            );
           }
         },
         (error) => {
@@ -128,15 +249,18 @@ export function ReadingTracker({
         return;
       }
       tracker.current = instance;
-      setPhase("live");
-      callbacks.current.onLoading(false);
+      phaseRef.current = "baseline";
+      setPhase("baseline");
     } catch (error) {
       if (token === generation.current) {
         stop();
         setMessage(cameraMessage(error));
       }
     }
-  };
+  }, [createTracker, release, stop]);
+  useEffect(() => {
+    if (autoStart) void start();
+  }, [autoStart, start]);
   return (
     <div className="assessment-camera">
       <video ref={video} hidden muted playsInline autoPlay />
@@ -146,7 +270,9 @@ export function ReadingTracker({
             ? eyes
               ? "Mata terdeteksi"
               : "Mata belum terlihat"
-            : "Tracking mata · opsional"}
+            : phase === "baseline"
+              ? "Menyiapkan referensi iris"
+              : "Kamera membaca"}
         </span>
         {phase === "off" ? (
           <button
@@ -162,9 +288,20 @@ export function ReadingTracker({
           </button>
         )}
       </div>
-      {phase === "loading" && <p role="status">Menyiapkan kamera…</p>}
+      {phase === "loading" && (
+        <p role="status">Menyiapkan kamera dan pelacak iris…</p>
+      )}
+      {phase === "baseline" && (
+        <div className="assessment-iris-reference">
+          <span aria-hidden="true">●</span>
+          <p role="status">
+            Lihat titik ini selama 2 detik. Jaga kepala tetap nyaman. Waktu tes
+            belum berjalan.
+          </p>
+        </div>
+      )}
       {message && <p role="status">{message}</p>}
-      {phase === "live" && (
+      {(phase === "live" || phase === "baseline") && (
         <details>
           <summary>Lihat titik mata</summary>
           <EyeTrackingPreview
@@ -172,9 +309,12 @@ export function ReadingTracker({
             landmarks={points}
             lastFrame={lastFrame}
           />
-          <p>Kamera mencatat keterbacaan mata, bukan skor kemampuan.</p>
+          <p>
+            Perubahan iris dicatat hanya saat teks dan pertanyaan berwaktu
+            tampil. Video tidak direkam.
+          </p>
         </details>
       )}
     </div>
   );
-}
+});

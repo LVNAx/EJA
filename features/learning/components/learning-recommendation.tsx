@@ -3,15 +3,25 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useAppState, useBrowserReady } from "../state/store";
-import { buildProgressModel, recommendPractice } from "../model/progress-model";
+import { buildProgressModel } from "../model/progress-model";
+import { recommendNextPractice } from "../model/practice-plan";
+import { useAssessmentHistory } from "@/lib/screening/assessment-store";
 import { learningHref } from "../paths";
+import { useReadingStudies } from "../gaze/study-store";
 
 export function LearningRecommendation({ childId }: { childId: string }) {
   const state = useAppState(childId);
   const ready = useBrowserReady();
+  const assessments = useAssessmentHistory(childId);
+  const studies = useReadingStudies(childId);
   const suggestion = useMemo(
-    () => recommendPractice(buildProgressModel(state).skills),
-    [state],
+    () =>
+      recommendNextPractice(
+        buildProgressModel(state).skills,
+        assessments,
+        studies,
+      ),
+    [state, assessments, studies],
   );
   if (!ready) return null;
   return (

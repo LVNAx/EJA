@@ -11,6 +11,7 @@ import {
 import { evidenceStatus } from "@/features/learning/state/evidence";
 import { learningHref } from "@/features/learning/paths";
 import { LearningRecommendation } from "@/features/learning/components/learning-recommendation";
+import { mathResults } from "@/features/learning/model/math-results";
 
 export default function SummaryPage() {
   const { childId, sessionId } = useParams<{
@@ -45,6 +46,13 @@ export default function SummaryPage() {
     childId,
     session.kind === "math" ? "/matematika" : "/literasi",
   );
+  const mathResult =
+    session.kind === "math"
+      ? mathResults({
+          sessions: { [session.id]: session },
+          evidence: state.evidence,
+        }).find((r) => r.id === session.activityId)
+      : null;
   return (
     <div className="container summary-page">
       <div className="summary-confetti" aria-hidden="true">
@@ -64,6 +72,25 @@ export default function SummaryPage() {
           Kamu sudah berlatih <strong>{session.title}</strong>. Kamu boleh
           mengulang kapan saja.
         </p>
+        {mathResult?.score !== null && mathResult?.score !== undefined && (
+          <section
+            className="summary-learned"
+            aria-label="Nilai kuis matematika"
+          >
+            <h2>
+              Nilai kuis: {mathResult.score} / 100
+              {mathResult.assessed < mathResult.total ? " · sementara" : ""}
+            </h2>
+            <p>
+              {mathResult.firstTry} dari {mathResult.assessed} soal tepat pada
+              percobaan pertama. {mathResult.solved} soal akhirnya selesai.
+            </p>
+            <p>
+              {mathResult.attempts} percobaan · {mathResult.hints} petunjuk
+              dipakai. Bantuan tidak mengurangi nilai.
+            </p>
+          </section>
+        )}
         <div className="summary-stats">
           <div>
             <span>Bintang latihan ini</span>

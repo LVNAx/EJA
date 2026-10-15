@@ -330,6 +330,51 @@
   min-height: 44px;
   padding-top: 10px;
 }
+.assessment-iris-reference {
+  padding: 16px;
+  text-align: center;
+  background: #faf7ff;
+  border-radius: 14px;
+}
+.assessment-iris-reference > span {
+  display: block;
+  font-size: 44px;
+  color: #7e22ce;
+}
+.assessment-reading-timer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #fff1ea;
+  border-radius: 16px;
+}
+.assessment-reading-timer strong {
+  font-variant-numeric: tabular-nums;
+}
+.assessment-iris-detail {
+  margin: 16px 0;
+}
+.assessment-iris-detail summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+.assessment-iris-detail table {
+  width: 100%;
+  text-align: left;
+  font-size: 13px;
+}
+.assessment-iris-detail :is(th, td) {
+  padding: 8px 4px;
+  border-bottom: 1px solid #e9d5ff;
+}
+.assessment-iris-detail li {
+  margin: 12px 0;
+}
 .assessment-camera .camera-eye-preview {
   max-width: 260px;
 }
@@ -343,6 +388,49 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+.assessment-next,
+.assessment-camera-result {
+  padding: 22px;
+  border: 1px solid #e9dff0;
+  border-radius: 20px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+.assessment-next {
+  background: #fff4ed;
+}
+.assessment-next h2,
+.assessment-camera-result h2 {
+  font-size: 21px;
+  font-weight: 700;
+}
+.assessment-next p,
+.assessment-camera-result p {
+  margin: 10px 0;
+}
+.assessment-next a {
+  margin-top: 10px;
+}
+.assessment-camera-result .assessment-two {
+  margin: 16px 0;
+}
+.assessment-camera-result .assessment-two > div {
+  min-width: 0;
+  padding: 14px;
+  background: #faf7ff;
+  border-radius: 14px;
+}
+.assessment-camera-result :is(span, strong, small) {
+  display: block;
+}
+.assessment-camera-result strong {
+  font-size: 24px;
+  margin: 6px 0;
+}
+.assessment-camera-result small {
+  color: #655d70;
+  font-size: 13px;
 }
 .assessment-result-grid {
   display: grid;
