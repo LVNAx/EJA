@@ -10,9 +10,9 @@ export const TASKS = [
   {
     key: "reading",
     title: "Membaca",
-    instruction: "Baca tulisan dengan suara jelas.",
+    instruction: "Baca teks dan jawab dalam 60 detik. Waktu boleh ditambah.",
     example:
-      "Pendamping mendengarkan, lalu mencatat ucapan yang sesuai atau keliru.",
+      "Kamera disiapkan sebelum waktu berjalan. Setelah teks, ada enam kata pendek tanpa batas waktu.",
   },
   {
     key: "naming",

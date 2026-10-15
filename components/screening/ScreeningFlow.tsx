@@ -22,6 +22,7 @@ import { ReadingTest } from "./tests/ReadingTest";
 import { NamingTest } from "./tests/NamingTest";
 import { DictationTest } from "./tests/DictationTest";
 import type { EyeObservation } from "./ReadingTracker";
+import type { ReadingSession } from "@/lib/screening/reading-session";
 import "./assessment.css";
 
 const ICONS = [Ear, BookOpen, Hash, Pencil];
@@ -40,9 +41,11 @@ export function ScreeningFlow({
   const [taskIndex, setTaskIndex] = useState(0),
     [ready, setReady] = useState(false),
     [error, setError] = useState("");
+  const [cameraEnabled, setCameraEnabled] = useState(true);
   const answers = useRef<AssessmentAnswer[]>([]),
     eyes = useRef<EyeObservation>(),
     record = useRef<AssessmentRecord>();
+  const readingSession = useRef<ReadingSession>();
   const completedTask = useRef(false);
   const task = TASKS[taskIndex],
     Icon = ICONS[taskIndex];
@@ -84,11 +87,13 @@ export function ScreeningFlow({
   const finishTask = (
     responses: AssessmentAnswer[],
     observed?: EyeObservation,
+    reading?: ReadingSession,
   ) => {
     if (completedTask.current) return;
     completedTask.current = true;
     answers.current.push(...responses);
     if (observed) eyes.current = observed;
+    if (reading) readingSession.current = reading;
     if (taskIndex < TASKS.length - 1) {
       setTaskIndex(taskIndex + 1);
       setStage("intro");
@@ -100,6 +105,9 @@ export function ScreeningFlow({
           version: 2,
           answers: answers.current,
           ...(eyes.current ? { eyeTracking: eyes.current } : {}),
+          ...(readingSession.current
+            ? { readingSession: readingSession.current }
+            : {}),
         },
       });
       record.current = value;
@@ -171,6 +179,14 @@ export function ScreeningFlow({
               />
               Pendamping sudah siap.
             </label>
+            <label className="assessment-check">
+              <input
+                type="checkbox"
+                checked={cameraEnabled}
+                onChange={(e) => setCameraEnabled(e.target.checked)}
+              />
+              Aktifkan kamera saat bagian membaca. Video tidak direkam.
+            </label>
             <button
               className="assessment-primary"
               disabled={!ready}
@@ -211,7 +227,7 @@ export function ScreeningFlow({
           <SoundTest onComplete={finishTask} />
         )}
         {stage === "task" && taskIndex === 1 && (
-          <ReadingTest onComplete={finishTask} />
+          <ReadingTest onComplete={finishTask} autoCamera={cameraEnabled} />
         )}
         {stage === "task" && taskIndex === 2 && (
           <NamingTest onComplete={finishTask} />

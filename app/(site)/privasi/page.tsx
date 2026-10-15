@@ -40,7 +40,24 @@ export default function PrivasiPage() {
           bersifat pilihan; anak tetap dapat membaca tanpa mikrofon.
         </p>
         <h2>Kamera opsional</h2>
-        <p>Eksperimen Pola Membaca meminta izin kamera saat pengguna memilih mengaktifkannya. Gambar diproses di browser; EJA tidak merekam, menyimpan, atau mengunggah video. Kalibrasi dan perkiraan pandangan hanya berada di memori selama sesi. Ringkasan tidak disimpan setelah halaman dimuat ulang dan tidak digunakan untuk menilai risiko disleksia. Kamera dimatikan saat dihentikan, sesi selesai, atau halaman ditinggalkan.</p>
+        <p>
+          Eksperimen Pola Membaca meminta izin kamera saat pengguna memilih
+          mengaktifkannya. Gambar diproses di browser; EJA tidak merekam,
+          menyimpan, atau mengunggah video. Kalibrasi, titik wajah, dan sampel
+          posisi pandangan hanya berada di memori selama sesi, lalu dibuang.
+          Ringkasan waktu per bagian, jumlah perpindahan, jawaban pemahaman, dan
+          bantuan pendamping disimpan paling banyak 10 sesi per anak pada
+          browser yang sama. Ringkasan ini dapat dilihat oleh pengguna perangkat
+          tersebut, belum disinkronkan ke akun, dan ikut terhapus jika data
+          situs pada browser dihapus. Pada tes membaca berwaktu, catatan juga
+          memuat jawaban, waktu pengerjaan, tambahan waktu, pengalaman tulisan
+          yang disampaikan anak, dan ringkasan perubahan posisi iris. Data tes
+          disimpan pada browser; dalam mode akun dapat disimpan bersama hasil
+          tes jika penyimpanan akun tersedia. Video, audio, dan rangkaian posisi
+          iris mentah tidak disimpan. Ringkasan dipakai untuk saran latihan,
+          tidak digunakan untuk menilai risiko disleksia. Kamera dimatikan saat
+          dihentikan, sesi selesai, atau halaman ditinggalkan.
+        </p>
         <h2>Hak orang tua</h2>
         <p>
           Orang tua dapat meminta penghapusan profil anak beserta seluruh

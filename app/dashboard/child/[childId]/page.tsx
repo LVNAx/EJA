@@ -192,7 +192,7 @@ export default async function ChildDashboardPage({
       </section>
 
       <div id="belajar" className="flex scroll-mt-6 flex-col gap-6">
-        <LearningProgressReport childId={profile.id} />
+        <LearningProgressReport childId={profile.id} serverRecords={child.assessments} />
         <LearningSupportReport childId={profile.id} />
         <LearningMonitor data={child} now={now} />
       </div>

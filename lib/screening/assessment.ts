@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { irisMotionSchema } from "@/features/learning/gaze/iris-motion";
+import { readingSessionSchema } from "./reading-session";
 import {
   DICTATION_ITEMS,
   MEANING_ITEMS,
@@ -71,10 +73,13 @@ export const submissionSchema = z
       .object({
         observedMs: z.number().finite().min(0).max(600_000),
         trackedMs: z.number().finite().min(0).max(600_000),
+        motion: irisMotionSchema.optional(),
       })
       .strict()
       .refine((v) => v.trackedMs <= v.observedMs)
+      .refine((v) => !v.motion || v.motion.validMs <= v.trackedMs + 1)
       .optional(),
+    readingSession: readingSessionSchema.optional(),
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -114,6 +119,29 @@ export const submissionSchema = z
           message: "Posisi kesalahan berulang.",
         });
     });
+    if (value.readingSession) {
+      const session = value.readingSession;
+      const observed = new Set(
+        value.answers
+          .filter(
+            (a) =>
+              a.type === "choice" &&
+              a.option !== null &&
+              a.durationMs !== null &&
+              a.durationMs > 0,
+          )
+          .map((a) => a.itemId),
+      );
+      if (
+        session.responseTimes.some((r) => !observed.has(r.itemId)) ||
+        (session.status === "completed" && session.responseTimes.length !== 2)
+      )
+        ctx.addIssue({
+          code: "custom",
+          path: ["readingSession"],
+          message: "Catatan waktu harus sesuai jawaban yang diberikan.",
+        });
+    }
   });
 export type AssessmentSubmission = z.infer<typeof submissionSchema>;
 export const assessmentRecordSchema = z

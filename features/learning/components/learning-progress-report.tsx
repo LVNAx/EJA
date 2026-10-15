@@ -3,14 +3,19 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useAppState, useBrowserReady } from "../state/store";
-import {
-  buildProgressModel,
-  recommendPractice,
-  TREND_LABELS,
-} from "../model/progress-model";
+import { buildProgressModel, TREND_LABELS } from "../model/progress-model";
 import { progressDemoData } from "../model/demo-data";
 import { learningHref } from "../paths";
 import { DEMO_CHILD_ID } from "@/lib/routes";
+import { useAssessmentHistory } from "@/lib/screening/assessment-store";
+import type { AssessmentRecord } from "@/lib/screening/assessment";
+import { recommendNextPractice } from "../model/practice-plan";
+import { MathResults } from "./math-results";
+import { useReadingStudies } from "../gaze/study-store";
+import { ReadingStudyHistory } from "../gaze/reading-study-report";
+import "../gaze/reading-study.css";
+
+const EMPTY: AssessmentRecord[] = [];
 
 const percent = (p: number) => `${Math.round(p * 100)}%`;
 const dateLabel = (at: string) =>
@@ -20,16 +25,28 @@ const dateLabel = (at: string) =>
     timeZone: "Asia/Jakarta",
   }).format(new Date(at));
 
-export function LearningProgressReport({ childId }: { childId: string }) {
+export function LearningProgressReport({
+  childId,
+  serverRecords = EMPTY,
+}: {
+  childId: string;
+  serverRecords?: AssessmentRecord[];
+}) {
   const state = useAppState(childId);
   const ready = useBrowserReady();
+  const localAssessments = useAssessmentHistory(childId);
+  const studies = useReadingStudies(childId);
   const [simulation, setSimulation] = useState(false);
   const showingSimulation = childId === DEMO_CHILD_ID && simulation;
   const model = useMemo(
     () => buildProgressModel(showingSimulation ? progressDemoData() : state),
     [showingSimulation, state],
   );
-  const recommendation = recommendPractice(model.skills);
+  const recommendation = recommendNextPractice(
+    model.skills,
+    showingSimulation ? [] : [...localAssessments, ...serverRecords],
+    showingSimulation ? [] : studies,
+  );
   return (
     <section
       className="progress-report"
@@ -47,7 +64,9 @@ export function LearningProgressReport({ childId }: { childId: string }) {
             onClick={() => setSimulation(!simulation)}
             aria-pressed={showingSimulation}
           >
-            {showingSimulation ? "Kembali ke data latihan" : "Lihat simulasi model"}
+            {showingSimulation
+              ? "Kembali ke data latihan"
+              : "Lihat simulasi model"}
           </button>
         )}
       </header>
@@ -158,6 +177,12 @@ export function LearningProgressReport({ childId }: { childId: string }) {
               Buka latihan {recommendation.skill.label}
             </Link>
           </div>
+          {!showingSimulation && (
+            <>
+              <ReadingStudyHistory childId={childId} />
+              <MathResults childId={childId} />
+            </>
+          )}
         </>
       )}
       <p className="progress-caption">

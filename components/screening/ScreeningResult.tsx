@@ -47,7 +47,7 @@ export function DemoResult({ childId }: { childId: string }) {
           <p role="status">Memuat catatan…</p>
         ) : record ? (
           <>
-            <AssessmentReport record={record} />
+            <AssessmentReport record={record} childId={childId} />
             <div className="assessment-two">
               <Link
                 className="assessment-primary"
