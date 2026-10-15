@@ -10,6 +10,7 @@ import {
 } from "@/features/learning/state/store";
 import { evidenceStatus } from "@/features/learning/state/evidence";
 import { learningHref } from "@/features/learning/paths";
+import { LearningRecommendation } from "@/features/learning/components/learning-recommendation";
 
 export default function SummaryPage() {
   const { childId, sessionId } = useParams<{
@@ -101,6 +102,7 @@ export default function SummaryPage() {
           </Link>
         </div>
       </div>
+      <LearningRecommendation childId={childId} />
     </div>
   );
 }

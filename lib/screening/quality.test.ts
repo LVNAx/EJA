@@ -21,19 +21,20 @@ describe("evaluateSessionQuality (FR-18)", () => {
   });
 
   it("tepat di batas porsi (50%) masih valid; di atasnya tidak", () => {
-    const half = { phonological: [...Array(4).fill(200), ...Array(4).fill(2000)], rapidNaming: [], spelling: [] };
+    const half = { phonological: [...Array(4).fill(200), ...Array(4).fill(2000)], rapidNaming: [], spelling: [...Array(4).fill(200), ...Array(4).fill(2000)] };
     expect(evaluateSessionQuality(half).valid).toBe(true);
-    const over = { phonological: [...Array(5).fill(200), ...Array(3).fill(2000)], rapidNaming: [], spelling: [] };
+    const over = { ...half, phonological: [...Array(5).fill(200), ...Array(3).fill(2000)] };
     expect(evaluateSessionQuality(over).valid).toBe(false);
   });
 
   it("penamaan cepat memakai batas jauh lebih rendah: 700 ms tidak dianggap tebakan di sana, tetapi dianggap di tes dengar", () => {
-    expect(evaluateSessionQuality({ phonological: [], rapidNaming: Array(12).fill(700), spelling: [] }).valid).toBe(true);
+    expect(evaluateSessionQuality({ ...normal, rapidNaming: Array(12).fill(700) }).valid).toBe(true);
     expect(evaluateSessionQuality({ phonological: Array(8).fill(700), rapidNaming: [], spelling: [] }).valid).toBe(false);
   });
 
-  it("tanpa data waktu: tidak dihukum", () => {
-    expect(evaluateSessionQuality({ phonological: [], rapidNaming: [], spelling: [] }).valid).toBe(true);
+  it("menolak data waktu kosong atau tidak lengkap", () => {
+    expect(evaluateSessionQuality({ phonological: [], rapidNaming: [], spelling: [] }).valid).toBe(false);
+    expect(evaluateSessionQuality({ phonological: [2500], rapidNaming: [], spelling: [] }).valid).toBe(false);
   });
 });
 

@@ -19,7 +19,7 @@ export default async function ScreeningPage({ params }: { params: { childId: str
     childName = child.name;
 
     // BR-04: batas sesi per hari. Teks untuk anak tidak menyinggung hasil atau status.
-    const { count } = await supabase.from("screening_sessions").select("id", { count: "exact", head: true }).eq("child_id", params.childId).gte("completed_at", startOfDayIso(Date.now()));
+    const { count } = await supabase.from("screening_assessments").select("id", { count: "exact", head: true }).eq("child_id", params.childId).gte("completed_at", startOfDayIso(Date.now()));
     if ((count ?? 0) >= MAX_SCREENINGS_PER_DAY) {
       return (
         <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-5 px-4 py-6">

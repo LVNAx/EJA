@@ -72,6 +72,7 @@ export default function LiteracyPage() {
           </span>
         </Link>
       </div>
+      <Link className="progress-link" href={learningHref(childId, "/latihan/pola-membaca")}>Eksperimen Pola Membaca · kamera opsional</Link>
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { LearningSupportReport } from "@/components/dashboard/LearningSupportReport";
+import { LearningProgressReport } from "@/features/learning/components/learning-progress-report";
+import { AssessmentHistory } from "@/components/screening/AssessmentHistory";
 import { ResetChildPinForm } from "@/components/auth/ChildLoginForm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -107,72 +109,90 @@ export default async function ChildDashboardPage({
           />{" "}
           Profil skrining
         </h2>
-        {latest && rec ? (
-          <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-            <div className="card flex flex-col gap-3 p-6">
-              <RadarChart scores={latest.scores} compact />
-            </div>
-            <div className="card flex flex-col gap-4 p-6">
-              <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-                Skrining {formatDateLong(latest.completedAt)}
-              </p>
-              <RiskBadge level={rec.level} size="lg" />
-              <p className="text-lg font-semibold">{rec.meaning}</p>
-              <p className="text-neutral-700">{rec.consult.text}</p>
-              {rec.attention.length > 0 && (
-                <p className="text-sm text-neutral-700">
-                  <span className="font-bold">Perlu perhatian:</span>{" "}
-                  {rec.attention.map((d) => d.label).join(", ")}.
+        <AssessmentHistory
+          childId={profile.id}
+          serverRecords={child.assessments}
+        />
+        <details className="card p-5">
+          <summary className="cursor-pointer font-semibold">
+            Riwayat tes versi lama
+          </summary>
+          <p className="my-3 text-sm text-neutral-600">
+            Hasil lama menggunakan aturan demo. Hasil ini tidak menjadi
+            pembanding tes versi baru.
+          </p>
+          {latest && rec ? (
+            <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+              <div className="card flex flex-col gap-3 p-6">
+                <RadarChart scores={latest.scores} compact />
+              </div>
+              <div className="card flex flex-col gap-4 p-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                  Skrining {formatDateLong(latest.completedAt)}
                 </p>
-              )}
-              <Link
-                href={ROUTES.childScreeningReport(profile.id)}
-                className="btn-primary mt-auto self-start !px-6 !py-3 !text-base"
-              >
-                Baca laporan lengkap <ArrowRight size={16} aria-hidden="true" />
-              </Link>
+                <RiskBadge level={rec.level} size="lg" />
+                <p className="text-lg font-semibold">{rec.meaning}</p>
+                <p className="text-neutral-700">{rec.consult.text}</p>
+                {rec.attention.length > 0 && (
+                  <p className="text-sm text-neutral-700">
+                    <span className="font-bold">Perlu perhatian:</span>{" "}
+                    {rec.attention.map((d) => d.label).join(", ")}.
+                  </p>
+                )}
+                <Link
+                  href={ROUTES.childScreeningReport(profile.id)}
+                  className="btn-primary mt-auto self-start !px-6 !py-3 !text-base"
+                >
+                  Baca laporan lengkap{" "}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              </div>
             </div>
-          </div>
-        ) : status === "needs-retest" && newest ? (
-          <div className="card flex flex-col items-start gap-3 p-6">
-            <p className="text-lg font-bold">
-              Skrining terakhir belum bisa dinilai
-            </p>
-            <p className="text-neutral-700">
-              {newest.invalidReason ??
-                "Sesi tidak selesai atau jawabannya terlalu cepat."}{" "}
-              Ajak {profile.name} mengulang di waktu ia santai dan fokus.
-            </p>
-            <ChildModeButton
-              childId={profile.id}
-              kind="screening"
-              limitReached={limitReached}
-              className="btn-primary !px-6 !py-3 !text-base"
-            >
-              Ulangi skrining
-            </ChildModeButton>
-          </div>
-        ) : (
-          <div className="card flex flex-col items-start gap-3 p-6">
-            <p className="text-lg font-bold">Belum ada hasil skrining</p>
-            <p className="text-neutral-700">
-              Skrining berupa empat permainan singkat. Hasilnya hanya terlihat
-              oleh Anda, bukan oleh {profile.name}.
-            </p>
-            <ChildModeButton
-              childId={profile.id}
-              kind="screening"
-              limitReached={limitReached}
-              className="btn-primary !px-6 !py-3 !text-base"
-            >
-              Mulai skrining
-            </ChildModeButton>
-          </div>
-        )}
-        <ScreeningHistory childId={profile.id} screenings={child.screenings} />
+          ) : status === "needs-retest" && newest ? (
+            <div className="card flex flex-col items-start gap-3 p-6">
+              <p className="text-lg font-bold">
+                Skrining terakhir belum bisa dinilai
+              </p>
+              <p className="text-neutral-700">
+                {newest.invalidReason ??
+                  "Sesi tidak selesai atau jawabannya terlalu cepat."}{" "}
+                Ajak {profile.name} mengulang di waktu ia santai dan fokus.
+              </p>
+              <ChildModeButton
+                childId={profile.id}
+                kind="screening"
+                limitReached={limitReached}
+                className="btn-primary !px-6 !py-3 !text-base"
+              >
+                Ulangi skrining
+              </ChildModeButton>
+            </div>
+          ) : (
+            <div className="card flex flex-col items-start gap-3 p-6">
+              <p className="text-lg font-bold">Belum ada hasil skrining</p>
+              <p className="text-neutral-700">
+                Skrining berupa empat permainan singkat. Hasilnya hanya terlihat
+                oleh Anda, bukan oleh {profile.name}.
+              </p>
+              <ChildModeButton
+                childId={profile.id}
+                kind="screening"
+                limitReached={limitReached}
+                className="btn-primary !px-6 !py-3 !text-base"
+              >
+                Mulai skrining
+              </ChildModeButton>
+            </div>
+          )}
+          <ScreeningHistory
+            childId={profile.id}
+            screenings={child.screenings}
+          />
+        </details>
       </section>
 
       <div id="belajar" className="flex scroll-mt-6 flex-col gap-6">
+        <LearningProgressReport childId={profile.id} />
         <LearningSupportReport childId={profile.id} />
         <LearningMonitor data={child} now={now} />
       </div>

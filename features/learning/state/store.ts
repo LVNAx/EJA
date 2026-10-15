@@ -5,6 +5,7 @@ import { z } from "zod";
 import { lessonById } from "../math/content";
 import { awardOnce, localDateKey, nextStreak } from "./progress";
 import { evidenceSchema, type LearningEvidence } from "./evidence";
+import { setFontPreference } from "@/lib/accessibility/font-preference";
 
 const settingsSchema = z.object({
   textSize: z.enum(["normal", "large"]),
@@ -313,6 +314,7 @@ export function recordSelfReading(sessionId: string): void {
 }
 
 export function updateSettings(settings: Partial<Settings>): void {
+  if (settings.fontFamily) setFontPreference(settings.fontFamily);
   change((draft) => {
     draft.settings = { ...draft.settings, ...settings };
   });

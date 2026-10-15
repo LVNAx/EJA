@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { FontSelector } from "@/components/accessibility/FontSelector";
 
 export const NAV_LINKS = [
   { href: "/cara-kerja", label: "Cara Kerja" },
@@ -33,14 +34,14 @@ export function Navbar() {
       {/* Di atas halaman: selebar layar. Setelah scroll: memendek jadi pill kaca di tengah. */}
       <nav
         aria-label="Navigasi utama"
-        style={{ maxWidth: scrolled ? 560 : 1536 }}
+        style={{ maxWidth: scrolled ? 740 : 1536 }}
         className={`flex w-full items-center justify-between rounded-full py-2.5 transition-all duration-500 ease-out ${
           scrolled ? "glass px-4" : "border border-transparent bg-transparent px-2 md:px-6"
         }`}
       >
         <div className="flex items-center gap-6">
           <Logo />
-          <ul className={`hidden items-center gap-1 overflow-hidden transition-all duration-500 md:flex ${scrolled ? "max-w-0 opacity-0" : "max-w-[640px] opacity-100"}`} aria-hidden={scrolled}>
+          <ul className={`hidden items-center gap-1 overflow-hidden transition-all duration-500 lg:flex ${scrolled ? "max-w-0 opacity-0" : "max-w-[640px] opacity-100"}`} aria-hidden={scrolled}>
             {NAV_LINKS.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} tabIndex={scrolled ? -1 : 0} className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${pathname === l.href ? "text-ink" : "text-neutral-600 hover:text-ink"}`}>
@@ -51,19 +52,22 @@ export function Navbar() {
           </ul>
         </div>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Link href="/login" className="rounded-full px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-ink">Masuk</Link>
-          <Link href="/daftar" className="rounded-full bg-accent-500 px-5 py-2.5 text-sm font-bold text-ink shadow-sm transition-all hover:bg-accent-600 hover:shadow-[0_6px_20px_rgba(255,140,97,0.45)]">Daftar</Link>
-        </div>
+        <div className="flex items-center gap-2">
+          <FontSelector />
+          <div className="hidden items-center gap-2 lg:flex">
+            <Link href="/login" className="rounded-full px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-ink">Masuk</Link>
+            <Link href="/daftar" className="rounded-full bg-accent-500 px-5 py-2.5 text-sm font-bold text-ink shadow-sm transition-all hover:bg-accent-600 hover:shadow-[0_6px_20px_rgba(255,140,97,0.45)]">Daftar</Link>
+          </div>
 
-        <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/70 md:hidden" aria-expanded={open} aria-label={open ? "Tutup menu" : "Buka menu"} onClick={() => setOpen((v) => !v)}>
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
+          <button type="button" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-white/70 lg:hidden" aria-expanded={open} aria-label={open ? "Tutup menu" : "Buka menu"} onClick={() => setOpen((v) => !v)}>
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </nav>
 
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="glass mt-2 w-full max-w-[560px] rounded-3xl p-3 md:hidden">
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="glass mt-2 w-full max-w-[560px] rounded-3xl p-3 lg:hidden">
             <ul className="flex flex-col">
               {NAV_LINKS.map((l) => (
                 <li key={l.href}><Link href={l.href} className="block rounded-2xl px-4 py-3 font-semibold hover:bg-white/70">{l.label}</Link></li>

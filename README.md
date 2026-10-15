@@ -27,25 +27,25 @@
 
 Anak disleksia berbahasa Indonesia sering terlambat terdeteksi, sementara skrining profesional mahal dan sulit dijangkau. EJA menyatukan tiga hal dalam satu alur:
 
-1. **Skrining**: empat permainan pendek yang terasa seperti bermain, bukan ujian.
-2. **Rekomendasi**: level risiko dengan bahasa awam, saran untuk orang tua dan guru, serta kapan perlu menemui profesional.
+1. **Tes versi 2**: bunyi kata, membaca, menyebut angka berurutan, dan dikte, bersama pendamping.
+2. **Catatan pendamping**: jawaban yang sesuai, bagian yang belum dinilai, waktu, dan bantuan yang digunakan. Belum menghasilkan tingkat risiko atau diagnosis.
 3. **Belajar** _(prototipe)_: latihan membaca dan menulis, serta dua materi matematika bertahap dengan suara, ilustrasi, dan kuis.
 
-Hasil skrining tampil di **dasbor orang tua**. Progres modul belajar tersimpan per anak di browser. Dasbor orang tua menampilkan catatan latihan nyata dari browser yang sama; sinkronisasi monitoring lintas perangkat belum tersedia. Anak tidak pernah melihat tingkat risikonya.
+Hasil skrining tampil di **dasbor orang tua**. Progres modul belajar tersimpan per anak di browser. Dasbor orang tua menampilkan catatan latihan nyata dari browser yang sama; sinkronisasi monitoring lintas perangkat belum tersedia. Tes versi 2 tidak menghitung tingkat risiko disleksia.
 
 Proyek ini dibuat untuk **JOINTS UGM 2026**.
 
 ## Demo singkat
 
-Dari beranda, pilih **Coba Belajar** untuk membuka pilihan membaca, menulis, atau matematika tanpa akun. Alamat langsung: `/demo/belajar`. **Coba Skrining** tetap membuka empat permainan di `/screening/demo`. Di dalam latihan demo, gunakan **Pilih kegiatan lain** untuk kembali. Catatan demo belajar tersimpan hanya di browser, terpisah dari profil anak.
+Dari beranda, pilih **Coba Belajar** untuk membuka pilihan membaca, menulis, atau matematika tanpa akun. Alamat langsung: `/demo/belajar`. **Coba Skrining** membuka empat kegiatan tes versi 2 di `/screening/demo`. Di dalam latihan demo, gunakan **Pilih kegiatan lain** untuk kembali. Catatan demo belajar tersimpan hanya di browser, terpisah dari profil anak.
 
 ## Status
 
 | Bagian                                           | Status                                                                                                                               |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Halaman publik (beranda, cara kerja, FAQ, dll.)  | ✅ Selesai                                                                                                                           |
-| Modul skrining (4 permainan, skor, mutu sesi)    | ✅ Selesai                                                                                                                           |
-| Rekomendasi klinis + laporan hasil + radar chart | ✅ Selesai, teks masih **draf belum ditinjau psikolog**                                                                              |
+| Tes versi 2 (4 kegiatan, bukti per butir)       | ✅ Prototipe; belum tervalidasi klinis                                                                                                                           |
+| Laporan versi 2                                 | ✅ Catatan per butir; laporan risiko dan radar lama hanya arsip                                                                              |
 | Dasbor orang tua                                 | ✅ Selesai, diuji dalam **mode demo**                                                                                                |
 | Auth orang tua, profil anak, kunci dasbor        | ✅ Email + password, callback konfirmasi dan kunci parent; database/RLS diuji pada Supabase, email konfirmasi masih perlu uji manual |
 | Email notifikasi (cron)                          | ⚠️ Ada, belum pernah mengirim; tanpa kunci hanya _dry-run_                                                                           |
@@ -54,24 +54,26 @@ Dari beranda, pilih **Coba Belajar** untuk membuka pilihan membaca, menulis, ata
 
 ## Fitur
 
-### Skrining
+### Tes versi 2
 
-| Permainan          | Yang diukur                 | Bobot awal |
-| ------------------ | --------------------------- | :--------: |
-| Dengarkan & Pilih  | Kesadaran bunyi (fonologis) |    35%     |
-| Sebutkan Cepat     | Penamaan cepat huruf        |    30%     |
-| Tulisan yang Benar | Ketepatan ejaan             |    20%     |
-| Ingat Urutannya    | Memori kerja (digit span)   |    15%     |
+Buka `/screening/demo`. Empat kegiatan, satu tugas per layar:
 
-- **Skor gabungan** adalah rata-rata berbobot. Di atas 0,75 = Risiko Rendah, di atas 0,45 = Sedang, selain itu Tinggi.
-- **Eskalasi**: bila satu dimensi di bawah 0,30, status dinaikkan satu tingkat agar kelemahan tajam tidak tertutup rata-rata.
-- **Mutu sesi**: jawaban yang terlalu banyak dan terlalu cepat dianggap tebakan. Sesi ditandai tidak valid dan tidak menghasilkan status.
-- **Batas ulang**: maksimal 3 sesi per hari per anak, ditegakkan di server.
-- Skor dihitung ulang di server; klien hanya mengirim skor per tes dan waktu respons.
+| Kegiatan | Catatan |
+| --- | --- |
+| Bunyi kata | 6 soal gambar dengan bunyi awal yang sama; waktu mulai setelah audio selesai |
+| Membaca | 4 kata, 2 kata rekaan, dan 2 soal pemahaman; ucapan dicatat pendamping |
+| Sebut angka | 12 angka berurutan, pemeriksaan pengenalan angka dahulu, waktu dan posisi kesalahan dicatat terpisah |
+| Dikte | 4 kata dengan jawaban ketik, tanpa pilihan kata, koreksi otomatis dan pemeriksaan ejaan browser dimatikan |
 
-Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/screening/config.ts).
+- Tidak menghasilkan skor gabungan, diagnosis, atau tingkat risiko: belum ada norma usia/kelas maupun validasi klinis.
+- Kecepatan tidak memberi poin untuk jawaban salah. Bagian dilewati, tidak terdengar, atau belum diperiksa dicatat sebagai belum dinilai, bukan kemampuan rendah.
+- Halaman ditinggalkan saat menjawab: soal diulang dan interupsi dicatat. Bantuan dan pengulangan audio tercatat per butir.
+- Kamera opsional saat membaca memakai pelacak iris yang sama dengan demo wajah. Hanya mencatat keterbacaan mata pada waktu menjawab; video dan titik wajah tidak disimpan, tidak memengaruhi skor jawaban.
+- Catatan versi 2 tersimpan maksimal 10 sesi per anak pada browser ini. Dalam mode akun, server memvalidasi jawaban per butir dan menyimpan ke tabel `screening_assessments` setelah migration **`20261015090000_screening_assessments_v2.sql`** diterapkan. Penyimpanan gagal ditampilkan secara eksplisit; catatan lokal dipertahankan.
+- Laporan pendamping menampilkan jumlah jawaban sesuai, jumlah butir dinilai, durasi, bantuan, dan interupsi. Riwayat lama dipisahkan dan tidak dibandingkan dengan protokol baru.
+- Penilaian lisan dilakukan pendamping; belum mengukur ucapan secara otomatis. Kata rekaan, bank soal, dan protokol masih perlu ditinjau serta diuji pada pembaca manusia.
 
-### Rekomendasi & laporan
+### Laporan versi lama (arsip)
 
 - Laporan berisi level risiko, penjelasan awam tiap dimensi, **radar chart** (SVG buatan sendiri, ada alternatif tabel untuk pembaca layar), saran orang tua dan guru, kapan konsultasi, serta disclaimer yang tidak bisa ditutup.
 - Perbandingan dengan sesi sebelumnya langsung tampil di radar.
@@ -93,7 +95,31 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 - Menulis memakai panduan goresan untuk huruf besar A–Z, huruf kecil a–z, dan angka 0–9. Skor mempertimbangkan jarak, cakupan, jumlah goresan, dan pengulangan garis.
 - Matematika berisi dua materi uji: pecahan dan perkalian dengan kelompok. Contoh sehari-hari dan dua tingkat petunjuk tersedia; jawaban belum tepat membuka bantuan bertahap. Kuis harus dijawab tepat sebelum materi dapat diselesaikan. Pengulangan materi tidak menghapus status pernah selesai.
 - Catatan lokal mencakup percobaan kuis, jawaban belum tepat, petunjuk, pemutaran contoh, kecocokan bentuk tulisan, dan hasil pencocokan bacaan. Membaca mandiri dicatat sebagai laporan anak dan belum dinilai otomatis. Bintang usaha dan pencapaian diberikan terbatas per aktivitas per hari.
-- Font OpenDyslexic, skala teks pada seluruh modul belajar, kecepatan suara, gerakan, dan efek apresiasi dapat diatur. Dialog pengaturan mendukung keyboard dan Escape. Progres, XP, dan sesi tersimpan di browser dengan kunci terpisah untuk tiap anak. Data ini belum ditulis ke tabel Supabase. Dasbor orang tua pada halaman anak menampilkan catatan nyata dari browser yang sama dalam bagian **Catatan latihan dan bantuan**, terpisah dari grafik riwayat database.
+- Font biasa (Outfit) menjadi bawaan. Pilihan **Font biasa / OpenDyslexic** tersedia di kanan header situs, modul belajar, dasbor, dan demo wajah/mata. Pilihan berlaku di seluruh aplikasi dan tersimpan pada browser ini; pengaturan belajar menggunakan pilihan yang sama. Skala teks, kecepatan suara, gerakan, dan efek apresiasi juga dapat diatur. Dialog pengaturan mendukung keyboard dan Escape. Progres, XP, dan sesi tersimpan di browser dengan kunci terpisah untuk tiap anak. Data ini belum ditulis ke tabel Supabase. Dasbor orang tua pada halaman anak menampilkan catatan nyata dari browser yang sama dalam bagian **Catatan latihan dan bantuan**, terpisah dari grafik riwayat database.
+
+### Model perkembangan belajar (demo)
+
+- Model **Beta–Bernoulli** di [`features/learning/model/progress-model.ts`](features/learning/model/progress-model.ts) mempelajari hasil tersimpan secara terpisah untuk membaca, menulis, pecahan, dan perkalian. Ini model probabilistik sederhana dengan pembaruan Bayesian; tidak memakai LLM, layanan AI berbayar, atau model diagnosis disleksia.
+- Setiap sesi selesai dengan hasil otomatis menjadi satu observasi berhasil/belum berhasil. Target membaca: ada hasil mikrofon yang cocok. Target menulis: skor bentuk terakhir ≥70%. Target matematika: kuis tepat pada percobaan pertama. Mendengarkan contoh, memakai petunjuk, dan jumlah bintang tidak digunakan sebagai penalti. Membaca mandiri, sesi lama tanpa bukti, serta sesi belum selesai tidak diperlakukan sebagai kegagalan.
+- Prior `Beta(1,1)` diperbarui menjadi `Beta(1+sukses, 1+belum berhasil)`, menggunakan paling banyak **20 sesi terbaru per kegiatan**. Perkiraan sesi serupa adalah `alpha/(alpha+beta)`. Interval kredibel 90% dihitung dari distribusi Beta; angka ditampilkan setelah minimal 3 sesi. Arah perubahan membandingkan jumlah target tercapai pada 3 sesi terbaru dengan 3 sesi sebelumnya.
+- Model dibangun ulang dari catatan per anak sehingga memuat ulang halaman tidak menggandakan observasi. Catatan tetap lokal di browser dan ikut terhapus ketika pengguna menghapus progres; belum ada sinkronisasi antarperangkat.
+- Anak melihat satu saran latihan di beranda dan ringkasan sesi. Orang tua melihat perkiraan, ketidakpastian, riwayat, serta saran pendampingan pada dasbor anak. Laporan juga dapat dibuka di `/child/[childId]/belajar/perkembangan`.
+- Untuk presentasi, buka `/child/demo/belajar/perkembangan` lalu **Lihat simulasi model**. Data contoh ditandai jelas, hanya berlaku pada profil demo publik, dan tidak ditulis ke penyimpanan atau dicampur dengan hasil anak.
+- Ambang 70%, prior, batas sesi, dan aturan saran adalah pilihan awal prototipe, belum dikalibrasi pada data anak. Hasil mikrofon dan skor bentuk adalah indikator tugas yang terbatas. Pengulangan pertanyaan yang sama, perbedaan kesulitan huruf/kata, dan ketergantungan antarsesi membatasi interpretasi; persentase tidak boleh disebut penguasaan keterampilan, bukti efektivitas, atau risiko disleksia.
+- Dasar matematis: [sequential updating model Bernoulli–Beta, UBC](https://www.cs.ubc.ca/~murphyk/pmtk/pmtk1/doc/examples/bernoulli_betaSequentialUpdate.html).
+
+### Eksperimen Pola Membaca (opsional)
+
+- Demo visual terpisah di **`/demo/wajah-mata`** menampilkan kamera besar, kontur wajah, kelopak mata, iris, seluruh titik opsional, dan pembesaran kedua mata. Halaman ini dapat dibuka tanpa akun dan tidak menjalankan kalibrasi atau tugas membaca. Video dan overlay memakai dimensi serta pencerminan yang sama. Tautannya tersedia pada demo belajar dan halaman eksperimen membaca.
+
+- Buka `/child/demo/belajar/latihan/pola-membaca` dari halaman demo atau latihan membaca. Kamera tidak diminta atau dimuat sebelum pengguna memberi persetujuan dan menekan **Aktifkan kamera**. Membaca biasa tetap dapat digunakan tanpa kamera.
+- **Mulai membaca** langsung memakai pelacak iris yang sama dengan demo wajah/mata. Pratinjau menampilkan kelopak mata, iris, dan pembesaran kedua mata selama membaca. Ringkasan tanpa kalibrasi hanya mencatat durasi dan bagian waktu mata dapat dilacak; tidak menghasilkan peta layar atau skor perhatian. Kalibrasi gagal tidak menghalangi sesi ini.
+- **MediaPipe Face Landmarker 0.10.32** mengekstrak titik mata/wajah secara lokal. Untuk peta layar opsional, regresi ridge kecil mempelajari pemetaan fitur mata/kepala ke koordinat layar dari **9 titik kalibrasi**. Model diperiksa pada **5 titik terpisah yang tidak digunakan melatihnya**; titik ditekan sambil dilihat dan sampel awal 400 ms dilewati untuk memberi waktu mata berpindah.
+- Semua aset model dan WASM disajikan dari `public/models/face-landmarker` dengan sumber, versi, SHA-256, dan lisensi Apache-2.0. Aset sekitar 25 MB di repositori; browser memuat model dan satu varian WASM saat kamera diaktifkan. Untuk menyiapkannya ulang, jalankan `npm run gaze:assets`. Tidak ada video yang diunggah, direkam, atau disimpan. Kalibrasi, fitur, dan sampel pandangan hanya di memori sesi.
+- Kalibrasi ditolak jika sampel kurang atau galat median >12% / persentil-90 >22% diagonal layar. Ringkasan pelacakan mata mensyaratkan minimal 5 detik dan cakupan mata ≥65%. Peta area layar juga mensyaratkan kalibrasi lolos dan waktu terpetakan ke layar ≥40%. Jeda antarframe dibatasi 250 ms saat menghitung cakupan agar kamera lambat/berhenti tidak dianggap terus melacak. Semua ambang ini adalah pilihan awal prototipe, belum divalidasi pada anak.
+- Kamera dihentikan ketika sesi selesai, dibatalkan, komponen dilepas, atau tab disembunyikan. Perubahan ukuran layar membatalkan kalibrasi/peta layar, sedangkan sesi pelacakan mata langsung tetap berjalan. Sesi membaca yang terputus tidak menampilkan peta. Permintaan izin/model yang selesai setelah pembatalan tetap dibersihkan. MediaPipe CPU dibatasi sekitar 10 inferensi per detik; perangkat lambat dapat gagal memenuhi kualitas.
+- Hasil berupa waktu membaca, cakupan, dan status kualitas pelacakan mata. Hanya sesi dengan kalibrasi yang lolos dapat menampilkan sebaran waktu pada **9 area layar** dengan alternatif tabel. Jika kualitas belum memadai, peta tidak ditampilkan. Tidak ada skor risiko disleksia, estimasi fiksasi per kata, diagnosis, atau penilaian perhatian. Hasil tidak masuk model perkembangan, skrining, bintang, atau penyimpanan browser.
+- Pengujian otomatis menggunakan data regresi sintetis, tracker simulasi untuk alur UI, dan webcam sintetis untuk memeriksa pemuatan model serta penolakan sinyal tanpa wajah. Uji dengan webcam dan pembaca manusia masih diperlukan untuk mengukur kegunaan dan ketepatan sebenarnya.
 
 ### Keamanan & privasi
 
@@ -140,7 +166,7 @@ Seluruh bobot dan ambang ada di satu berkas: [`lib/screening/config.ts`](lib/scr
 │   ├── auth/              # kunci dasbor, server action
 │   └── supabase/          # klien browser, server, middleware, admin
 ├── supabase/
-│   ├── migrations/        # 0000–0003
+│   ├── migrations/        # skema, RLS, dan catatan tes versi 2
 │   └── seed/              # data contoh untuk pengembangan
 ├── docs/                  # teks rekomendasi untuk ditinjau psikolog
 ├── middleware.ts          # sesi Supabase + penjaga /dashboard

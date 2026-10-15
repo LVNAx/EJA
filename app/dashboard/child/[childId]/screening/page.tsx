@@ -7,30 +7,94 @@ import { PrintButton } from "@/components/dashboard/PrintButton";
 import { ScreeningReport } from "@/components/dashboard/ScreeningReport";
 import { loadChild } from "@/lib/dashboard/data";
 import { MAX_SCREENINGS_PER_DAY } from "@/lib/screening/config";
-import { latestScreening, previousValidScreening, screeningsToday } from "@/lib/dashboard/metrics";
+import {
+  latestScreening,
+  previousValidScreening,
+  screeningsToday,
+} from "@/lib/dashboard/metrics";
 import { ROUTES } from "@/lib/routes";
+import { AssessmentHistory } from "@/components/screening/AssessmentHistory";
 
-export default async function ScreeningReportPage({ params, searchParams }: { params: { childId: string }; searchParams: { s?: string } }) {
+export default async function ScreeningReportPage({
+  params,
+  searchParams,
+}: {
+  params: { childId: string };
+  searchParams: { s?: string };
+}) {
   const { child, now } = await loadChild(params.childId);
   if (!child) notFound();
 
   const { profile } = child;
-  const limitReached = screeningsToday(child.screenings, now) >= MAX_SCREENINGS_PER_DAY;
+  const limitReached =
+    screeningsToday(child.screenings, now) >= MAX_SCREENINGS_PER_DAY;
   // ?s=<id> membuka sesi dari riwayat; tanpa itu, sesi terbaru.
-  const record = (searchParams.s ? child.screenings.find((s) => s.id === searchParams.s) : null) ?? latestScreening(child.screenings);
+  const record =
+    (searchParams.s
+      ? child.screenings.find((s) => s.id === searchParams.s)
+      : null) ?? latestScreening(child.screenings);
   const back = (
-    <Link href={ROUTES.childDashboard(profile.id)} className="no-print inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-neutral-600 hover:text-ink"><ArrowLeft size={16} aria-hidden="true" /> Dasbor {profile.name}</Link>
+    <Link
+      href={ROUTES.childDashboard(profile.id)}
+      className="no-print inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-neutral-600 hover:text-ink"
+    >
+      <ArrowLeft size={16} aria-hidden="true" /> Dasbor {profile.name}
+    </Link>
   );
+
+  if (!searchParams.s)
+    return (
+      <div className="flex flex-col gap-6">
+        {back}
+        <h1 className="text-3xl font-bold">Catatan kegiatan {profile.name}</h1>
+        <AssessmentHistory
+          childId={profile.id}
+          serverRecords={child.assessments}
+        />
+        <p className="text-neutral-600">
+          Empat kegiatan: bunyi kata, membaca, menyebut angka, dan dikte.
+        </p>
+        <ChildModeButton
+          childId={profile.id}
+          kind="screening"
+          limitReached={limitReached}
+          className="btn-primary self-start"
+        >
+          Mulai kegiatan
+        </ChildModeButton>
+        <p className="text-sm text-neutral-600">
+          Catatan jawaban membantu pendamping memilih latihan. Tes versi baru
+          belum menghasilkan tingkat risiko disleksia.
+        </p>
+      </div>
+    );
 
   if (!record) {
     return (
       <div className="flex flex-col gap-6">
         {back}
         <div className="card flex flex-col items-center gap-4 p-10 text-center">
-          <ClipboardList size={48} className="text-brand-500" strokeWidth={1.6} aria-hidden="true" />
-          <h1 className="text-2xl font-bold">Belum ada hasil skrining untuk {profile.name}</h1>
-          <p className="max-w-md text-neutral-600">Skrining berupa empat permainan singkat dan hasilnya hanya terlihat oleh Anda.</p>
-          <ChildModeButton childId={profile.id} kind="screening" limitReached={limitReached} className="btn-primary">Mulai skrining</ChildModeButton>
+          <ClipboardList
+            size={48}
+            className="text-brand-500"
+            strokeWidth={1.6}
+            aria-hidden="true"
+          />
+          <h1 className="text-2xl font-bold">
+            Belum ada hasil skrining untuk {profile.name}
+          </h1>
+          <p className="max-w-md text-neutral-600">
+            Skrining berupa empat permainan singkat dan hasilnya hanya terlihat
+            oleh Anda.
+          </p>
+          <ChildModeButton
+            childId={profile.id}
+            kind="screening"
+            limitReached={limitReached}
+            className="btn-primary"
+          >
+            Mulai skrining
+          </ChildModeButton>
         </div>
         <DisclaimerNote />
       </div>
@@ -44,9 +108,22 @@ export default async function ScreeningReportPage({ params, searchParams }: { pa
         {back}
         <div className="card flex flex-col items-start gap-4 p-8">
           <RotateCcw size={36} className="text-accent-600" aria-hidden="true" />
-          <h1 className="text-2xl font-bold">Skrining ini belum bisa dinilai</h1>
-          <p className="max-w-2xl text-neutral-700">{record.invalidReason ?? "Sesi tidak selesai atau terlalu banyak jawaban yang sangat cepat, sehingga hasilnya belum bisa dipercaya."} Ini bukan salah {profile.name}. Coba lagi saat ia santai dan fokus.</p>
-          <ChildModeButton childId={profile.id} kind="screening" limitReached={limitReached} className="btn-primary">Ulangi skrining</ChildModeButton>
+          <h1 className="text-2xl font-bold">
+            Skrining ini belum bisa dinilai
+          </h1>
+          <p className="max-w-2xl text-neutral-700">
+            {record.invalidReason ??
+              "Sesi tidak selesai atau terlalu banyak jawaban yang sangat cepat, sehingga hasilnya belum bisa dipercaya."}{" "}
+            Ini bukan salah {profile.name}. Coba lagi saat ia santai dan fokus.
+          </p>
+          <ChildModeButton
+            childId={profile.id}
+            kind="screening"
+            limitReached={limitReached}
+            className="btn-primary"
+          >
+            Ulangi skrining
+          </ChildModeButton>
         </div>
         <DisclaimerNote />
       </div>
@@ -66,7 +143,9 @@ export default async function ScreeningReportPage({ params, searchParams }: { pa
           scores: record.scores,
           riskScore: record.riskScore,
           riskLevel: record.riskLevel,
-          previous: prev ? { scores: prev.scores, completedAt: prev.completedAt } : null,
+          previous: prev
+            ? { scores: prev.scores, completedAt: prev.completedAt }
+            : null,
         }}
         actions={<PrintButton />}
       />

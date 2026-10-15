@@ -4,7 +4,7 @@ const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      fontFamily: { sans: ["var(--font-outfit)", "system-ui", "sans-serif"] },
+      fontFamily: { sans: ["var(--font-ui)", "system-ui", "sans-serif"] },
       colors: {
         ink: "#1E0A45",
         accent: { 50: "#FFF1EA", 100: "#FFE3D6", 300: "#FFB596", 500: "#FF8C61", 600: "#F5723F" },

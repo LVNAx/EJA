@@ -58,6 +58,7 @@ export function calculateRiskScore(scores: ScreeningScores): { riskScore: number
 }
 
 export function rapidNamingItemScore(timeUsedMs: number, isCorrect: boolean, maxMs: number = SCREENING_CONFIG.rapidNaming.maxMs): number {
+  if (!isCorrect || !Number.isFinite(timeUsedMs) || timeUsedMs < 0 || !Number.isFinite(maxMs) || maxMs <= 0) return 0;
   const w = SCREENING_CONFIG.rapidNaming.speedWeight;
   const speed = Math.max(0, 1 - timeUsedMs / maxMs);
   return speed * w + (isCorrect ? 1 - w : 0);

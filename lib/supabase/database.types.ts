@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      screening_assessments: {
+        Row: { id: string; child_id: string; protocol_version: number; responses: Json; completed_at: string }
+        Insert: { id: string; child_id: string; protocol_version: number; responses: Json; completed_at?: string }
+        Update: { id?: string; child_id?: string; protocol_version?: number; responses?: Json; completed_at?: string }
+        Relationships: [{ foreignKeyName: "screening_assessments_child_id_fkey"; columns: ["child_id"]; isOneToOne: false; referencedRelation: "children"; referencedColumns: ["id"] }]
+      }
       child_learning_progress: {
         Row: {
           child_id: string

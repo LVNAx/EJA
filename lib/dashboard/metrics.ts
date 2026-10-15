@@ -62,8 +62,9 @@ export function previousValidScreening(screenings: ScreeningRecord[], current: S
   );
 }
 
-export function deriveChildStatus(d: Pick<ChildData, "screenings" | "sessions">): ChildStatus {
+export function deriveChildStatus(d: Pick<ChildData, "screenings" | "sessions" | "assessments">): ChildStatus {
   if (d.sessions.length > 0) return "learning";
+  if (d.assessments?.length) return "screened";
   const latest = latestScreening(d.screenings);
   if (!latest) return "not-screened";
   return latest.isValid ? "screened" : "needs-retest";

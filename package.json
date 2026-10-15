@@ -9,9 +9,11 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "gaze:assets": "node scripts/prepare-gaze-assets.mjs",
     "export:review": "vite-node scripts/export-review.ts"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.32",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
     "bcryptjs": "^2.4.3",

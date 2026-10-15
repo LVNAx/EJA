@@ -73,6 +73,15 @@ describe("migration", () => {
 });
 
 describe("RLS", () => {
+  it("tes versi 2: jawaban hanya bisa ditulis dan dibaca keluarga pemilik", async () => {
+    const ins = (id: string, child: string) => `insert into public.screening_assessments(id,child_id,protocol_version,responses) values ('${id}','${child}',2,'{"version":2,"answers":[]}')`;
+    await as(A, ins("cc000000-0000-4000-8000-000000000001", CA));
+    await expect(as(A, ins("cc000000-0000-4000-8000-000000000002", CB))).rejects.toThrow(/row-level security/);
+    await as(B, ins("cc000000-0000-4000-8000-000000000003", CB));
+    const rows = await as(A, "select child_id from public.screening_assessments");
+    expect(rows.rows).toEqual([{ child_id: CA }]);
+    await expect(as(A, `insert into public.screening_assessments(id,child_id,protocol_version,responses) values ('cc000000-0000-4000-8000-000000000004','${CA}',2,'{}')`)).rejects.toThrow(/check/);
+  });
   it("orang tua hanya melihat anaknya sendiri", async () => {
     const r = await as(A, "select id from public.children");
     expect(r.rows.map((x) => (x as { id: string }).id)).toEqual([CA]);

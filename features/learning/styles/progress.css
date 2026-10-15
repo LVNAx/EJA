@@ -1,0 +1,165 @@
+.progress-report,
+.practice-suggestion {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid #e9d5ff;
+  border-radius: 24px;
+  background: #ffffffed;
+  color: #1e0a45;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.learning-root .progress-report,
+.learning-root .practice-suggestion {
+  font-size: calc(16px * var(--text-scale, 1));
+}
+.progress-report h2,
+.practice-suggestion h2 {
+  margin: 4px 0 12px;
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.progress-report h3 {
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.progress-report p,
+.practice-suggestion p {
+  margin: 8px 0;
+}
+.progress-kicker {
+  font-size: 0.8em !important;
+  font-weight: 700;
+  color: #7e22ce;
+}
+.progress-heading,
+.progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.progress-heading > div {
+  min-width: 0;
+}
+.progress-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.progress-skill {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e9d5ff;
+  border-radius: 20px;
+  background: #faf5ff;
+}
+.progress-target,
+.progress-caption,
+.progress-history {
+  font-size: 0.875em;
+  color: #625872;
+}
+.progress-estimate strong {
+  display: block;
+  color: #7e22ce;
+  font-size: 2.25em;
+  line-height: 1.4;
+}
+.progress-estimate span {
+  display: block;
+  font-size: 0.9em;
+}
+.progress-trend,
+.progress-pending {
+  font-weight: 700;
+}
+.progress-simulation,
+.progress-empty,
+.progress-parent-advice {
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff1ea;
+}
+.progress-report summary {
+  padding: 10px 0;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.progress-history {
+  list-style: decimal;
+  padding-left: 24px;
+}
+.progress-history li {
+  margin: 12px 0;
+}
+.progress-history li > * {
+  display: block;
+}
+.progress-met {
+  color: #047857;
+}
+.progress-retry {
+  color: #9a3412;
+}
+.progress-button,
+.learning-root .progress-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  max-width: 100%;
+  padding: 10px 18px;
+  border-radius: 24px;
+  background: #ff8c61;
+  color: #1e0a45;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.progress-link,
+.learning-root .progress-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  color: #7e22ce;
+  text-decoration: underline;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+}
+.progress-actions {
+  margin-top: 16px;
+}
+.progress-page {
+  padding-block: 28px 48px;
+}
+.progress-page > h1 {
+  margin: 18px 0;
+  font-size: calc(28px * var(--text-scale, 1));
+  font-weight: 700;
+}
+.progress-report :is(a, button, summary):focus-visible,
+.practice-suggestion a:focus-visible {
+  outline: 3px solid #7e22ce;
+  outline-offset: 4px;
+}
+@media (max-width: 700px) {
+  .progress-skill-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .progress-report,
+  .practice-suggestion {
+    padding: 18px;
+  }
+  .progress-skill {
+    padding: 16px;
+  }
+}

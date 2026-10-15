@@ -1,90 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { BookOpen, Check, Ear, Hash, Pencil } from "lucide-react";
+import { FontSelector } from "@/components/accessibility/FontSelector";
+import { Logo } from "@/components/site/Logo";
+import { TASKS } from "@/lib/screening/protocol";
 import {
-  Brain,
-  Ear,
-  Gamepad2,
-  PartyPopper,
-  PenLine,
-  Star,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
-import { AuroraBackground } from "./AuroraBackground";
-import { StepProgress } from "./StepProgress";
-import { PhonologicalTest } from "./tests/PhonologicalTest";
-import { RapidNamingTest } from "./tests/RapidNamingTest";
-import { SpellingTest } from "./tests/SpellingTest";
-import { DigitSpanTest } from "./tests/DigitSpanTest";
-import { saveScreening } from "@/app/screening/[childId]/actions";
-import { assessRisk, type ScreeningScores } from "@/lib/screening/scoring";
+  assessmentRecordSchema,
+  type AssessmentAnswer,
+  type AssessmentRecord,
+} from "@/lib/screening/assessment";
 import {
-  evaluateSessionQuality,
-  type ResponseTimings,
-} from "@/lib/screening/quality";
-import { SpeakButton } from "./SpeakButton";
+  rememberDemoResult,
+  saveLocalAssessment,
+} from "@/lib/screening/assessment-store";
+import { saveAssessment } from "@/app/screening/[childId]/assessment-actions";
 import { ROUTES } from "@/lib/routes";
+import { SoundTest } from "./tests/SoundTest";
+import { ReadingTest } from "./tests/ReadingTest";
+import { NamingTest } from "./tests/NamingTest";
+import { DictationTest } from "./tests/DictationTest";
+import type { EyeObservation } from "./ReadingTracker";
+import "./assessment.css";
 
-type Stage =
-  | "intro"
-  | "i1"
-  | "t1"
-  | "i2"
-  | "t2"
-  | "i3"
-  | "t3"
-  | "i4"
-  | "t4"
-  | "saving"
-  | "done";
-
-const INTROS: Record<
-  1 | 2 | 3 | 4,
-  { Icon: LucideIcon; title: string; text: string }
-> = {
-  1: {
-    Icon: Ear,
-    title: "Dengarkan Bunyi",
-    text: "Dengarkan satu kata. Pilih gambar yang namanya dimulai dengan bunyi yang sama.",
-  },
-  2: {
-    Icon: Zap,
-    title: "Cari Huruf yang Sama",
-    text: "Lihat huruf yang muncul. Pilih huruf yang sama sebelum waktunya habis.",
-  },
-  3: {
-    Icon: PenLine,
-    title: "Tulisan yang Benar",
-    text: "Dengarkan kata, lalu pilih tulisan yang benar.",
-  },
-  4: {
-    Icon: Brain,
-    title: "Ingat Urutannya",
-    text: "Angka muncul satu per satu. Ingat urutannya, lalu ketuk angkanya.",
-  },
-};
-
-const stageNumber = (s: Stage): 1 | 2 | 3 | 4 | null => {
-  const m = /^[it]([1-4])$/.exec(s);
-  return m ? (Number(m[1]) as 1 | 2 | 3 | 4) : null;
-};
-
-function IconBadge({ Icon }: { Icon: LucideIcon }) {
-  return (
-    <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-500 text-white shadow-[0_10px_30px_rgba(168,85,247,0.4)]">
-      <Icon size={38} strokeWidth={2.2} />
-    </span>
-  );
-}
-
-/**
- * `demo` = kunjungan dari halaman depan tanpa akun: hasil ditampilkan lewat sessionStorage.
- * Pada anak sungguhan, anak TIDAK melihat tingkat risiko (FR-19); hasil hanya ada di dasbor orang tua.
- */
+const ICONS = [Ear, BookOpen, Hash, Pencil];
 export function ScreeningFlow({
   childId,
   childName,
@@ -94,216 +34,249 @@ export function ScreeningFlow({
   childName: string;
   demo: boolean;
 }) {
-  const router = useRouter();
-  const [stage, setStage] = useState<Stage>("intro");
-  const [scores, setScores] = useState<Partial<ScreeningScores>>({});
-  const [timings, setTimings] = useState<ResponseTimings>({
-    phonological: [],
-    rapidNaming: [],
-    spelling: [],
-  });
-  const [final, setFinal] = useState<ScreeningScores | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-
-  const save = async (all: ScreeningScores, t: ResponseTimings) => {
-    setSaveError(null);
+  const [stage, setStage] = useState<
+    "welcome" | "intro" | "task" | "saving" | "done"
+  >("welcome");
+  const [taskIndex, setTaskIndex] = useState(0),
+    [ready, setReady] = useState(false),
+    [error, setError] = useState("");
+  const answers = useRef<AssessmentAnswer[]>([]),
+    eyes = useRef<EyeObservation>(),
+    record = useRef<AssessmentRecord>();
+  const completedTask = useRef(false);
+  const task = TASKS[taskIndex],
+    Icon = ICONS[taskIndex];
+  useEffect(() => {
+    const heading = document.querySelector<HTMLElement>(".assessment-main h1");
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  }, [stage, taskIndex]);
+  const save = async (value: AssessmentRecord) => {
     setStage("saving");
-
+    setError("");
+    const localSaved = saveLocalAssessment(childId, value);
     if (demo) {
-      const { riskScore, riskLevel } = assessRisk(all);
-      const quality = evaluateSessionQuality(t);
-      try {
-        sessionStorage.setItem(
-          `eja-screening-${childId}`,
-          JSON.stringify({
-            scores: all,
-            riskScore,
-            riskLevel,
-            completedAt: new Date().toISOString(),
-            valid: quality.valid,
-            invalidReason: quality.reason,
-          }),
+      const sessionSaved = rememberDemoResult(childId, value);
+      if (!localSaved && !sessionSaved)
+        setError(
+          "Penyimpanan browser tidak tersedia. Catatan hanya tersedia selama halaman ini terbuka.",
         );
-      } catch {
-        /* sessionStorage tidak tersedia */
-      }
-      router.push(`/screening/${childId}/result`);
+      setStage("done");
       return;
     }
-
     try {
-      const res = await saveScreening(childId, all, t);
-      if (res.ok) setStage("done");
-      else setSaveError(res.error ?? "Tidak diketahui");
+      const result = await saveAssessment(childId, value);
+      if (!result.ok) {
+        setError(result.error ?? "Hasil belum tersimpan ke akun.");
+        return;
+      }
+      setStage("done");
     } catch {
-      setSaveError("Koneksi bermasalah");
+      setError(
+        localSaved
+          ? "Koneksi terputus. Catatan pada browser ini masih tersedia."
+          : "Catatan belum tersimpan. Coba lagi sebelum menutup halaman.",
+      );
     }
   };
-
-  const done =
-    (key: keyof ScreeningScores, next: Stage) =>
-    (value: number, responseMs?: number[]) => {
-      const merged = { ...scores, [key]: value };
-      setScores(merged);
-      const t =
-        key === "digitSpan" || !responseMs
-          ? timings
-          : { ...timings, [key]: responseMs };
-      setTimings(t);
-      if (key === "digitSpan") {
-        setFinal(merged as ScreeningScores);
-        void save(merged as ScreeningScores, t);
-      } else setStage(next);
-    };
-
-  const n = stageNumber(stage);
-
+  const finishTask = (
+    responses: AssessmentAnswer[],
+    observed?: EyeObservation,
+  ) => {
+    if (completedTask.current) return;
+    completedTask.current = true;
+    answers.current.push(...responses);
+    if (observed) eyes.current = observed;
+    if (taskIndex < TASKS.length - 1) {
+      setTaskIndex(taskIndex + 1);
+      setStage("intro");
+    } else {
+      const value = assessmentRecordSchema.parse({
+        id: crypto.randomUUID(),
+        completedAt: new Date().toISOString(),
+        submission: {
+          version: 2,
+          answers: answers.current,
+          ...(eyes.current ? { eyeTracking: eyes.current } : {}),
+        },
+      });
+      record.current = value;
+      void save(value);
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
   return (
-    <main className="screening-area mx-auto flex min-h-screen w-full max-w-md flex-col gap-5 px-4 py-6">
-      <AuroraBackground />
-      <Link
-        href={demo ? "/" : ROUTES.childHome(childId)}
-        className="self-start rounded-full px-3 py-2 text-sm font-semibold text-brand-700 underline"
-      >
-        Kembali · permainan ini belum disimpan
-      </Link>
-      {n && <StepProgress current={n} />}
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={stage}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.25 }}
-          className="flex flex-1 flex-col justify-center"
+    <div className="assessment-shell">
+      <header className="assessment-header">
+        <Logo />
+        <FontSelector />
+      </header>
+      <main id="main" className="assessment-main">
+        <Link
+          className="assessment-back"
+          href={demo ? "/demo/belajar" : ROUTES.childHome(childId)}
         >
-          {stage === "intro" && (
-            <div className="card flex flex-col items-center gap-5 p-8 text-center">
-              <IconBadge Icon={Gamepad2} />
-              <h1 className="text-3xl font-bold leading-tight">
-                Halo, <span className="marker">{childName}</span>!
-              </h1>
-              <p className="text-neutral-600">
-                Yuk main 4 permainan seru. Tidak ada nilai jelek, kerjakan
-                sebisa kamu ya.
-              </p>
-              <button
-                type="button"
-                className="btn-primary w-full"
-                onClick={() => setStage("i1")}
+          ← Kembali
+        </Link>
+        {(stage === "intro" || stage === "task") && (
+          <nav className="assessment-steps" aria-label="Tahapan tes">
+            {TASKS.map((t, i) => (
+              <span
+                key={t.key}
+                aria-current={i === taskIndex ? "step" : undefined}
+                className={
+                  i === taskIndex ? "current" : i < taskIndex ? "complete" : ""
+                }
               >
-                Ayo Mulai
-              </button>
+                <b>
+                  {i < taskIndex ? (
+                    <Check size={14} aria-hidden="true" />
+                  ) : (
+                    i + 1
+                  )}
+                </b>
+                <span>{t.title}</span>
+              </span>
+            ))}
+          </nav>
+        )}
+        {stage === "welcome" && (
+          <section className="assessment-card assessment-welcome">
+            <span className="assessment-icon">
+              <BookOpen size={30} aria-hidden="true" />
+            </span>
+            <div className="assessment-card-heading">
+              <p className="assessment-kicker">Kenali cara belajarmu</p>
+              <h1>Halo, {childName}.</h1>
+              <p>Empat kegiatan singkat bersama pendamping.</p>
             </div>
-          )}
-
-          {(stage === "i1" ||
-            stage === "i2" ||
-            stage === "i3" ||
-            stage === "i4") &&
-            n && (
-              <div className="card flex flex-col items-center gap-5 p-8 text-center">
-                <IconBadge Icon={INTROS[n].Icon} />
-                <h2 className="text-2xl font-bold">{INTROS[n].title}</h2>
-                <p className="text-neutral-600">{INTROS[n].text}</p>
-                {n === 1 && (
-                  <div className="rounded-2xl bg-brand-50 p-4 text-left">
-                    <p className="font-bold">Coba pahami contohnya</p>
-                    <p className="mt-2">
-                      Kata <strong>susu</strong> dan <strong>sapu</strong>{" "}
-                      sama-sama dimulai dengan bunyi <strong>s</strong>. Jadi,
-                      saat mendengar “susu”, kamu memilih gambar sapu.
-                    </p>
-                    <p className="mt-2 text-sm text-neutral-600">
-                      Pada permainan ini, cocokkan bunyi awalnya.
-                    </p>
+            <div className="assessment-overview">
+              {TASKS.map((t, i) => {
+                const TaskIcon = ICONS[i];
+                return (
+                  <div key={t.key}>
+                    <TaskIcon size={23} aria-hidden="true" />
+                    <span>{t.title}</span>
                   </div>
-                )}
-                <SpeakButton
-                  autoPlay={false}
-                  label="Dengarkan petunjuk"
-                  text={`${INTROS[n].text}${n === 1 ? " Contohnya, susu dan sapu dimulai dengan bunyi yang sama. Saat mendengar susu, pilih gambar sapu." : ""}`}
-                />
+                );
+              })}
+            </div>
+            <label className="assessment-check">
+              <input
+                type="checkbox"
+                checked={ready}
+                onChange={(e) => setReady(e.target.checked)}
+              />
+              Pendamping sudah siap.
+            </label>
+            <button
+              className="assessment-primary"
+              disabled={!ready}
+              onClick={() => setStage("intro")}
+            >
+              Mulai kegiatan
+            </button>
+            <p className="assessment-helper">
+              Boleh berhenti atau melewati bagian yang belum bisa dilakukan.
+            </p>
+          </section>
+        )}
+        {stage === "intro" && (
+          <section className="assessment-card assessment-welcome">
+            <span className="assessment-icon">
+              <Icon size={30} aria-hidden="true" />
+            </span>
+            <div className="assessment-card-heading">
+              <p className="assessment-kicker">
+                Kegiatan {taskIndex + 1} dari 4
+              </p>
+              <h1>{task.title}</h1>
+              <p>{task.instruction}</p>
+            </div>
+            <div className="assessment-example">{task.example}</div>
+            <button
+              className="assessment-primary"
+              onClick={() => {
+                completedTask.current = false;
+                setStage("task");
+              }}
+            >
+              Saya siap
+            </button>
+          </section>
+        )}
+        {stage === "task" && taskIndex === 0 && (
+          <SoundTest onComplete={finishTask} />
+        )}
+        {stage === "task" && taskIndex === 1 && (
+          <ReadingTest onComplete={finishTask} />
+        )}
+        {stage === "task" && taskIndex === 2 && (
+          <NamingTest onComplete={finishTask} />
+        )}
+        {stage === "task" && taskIndex === 3 && (
+          <DictationTest onComplete={finishTask} />
+        )}
+        {stage === "saving" && (
+          <section className="assessment-card">
+            <h1>
+              {error ? "Catatan belum tersimpan ke akun" : "Menyimpan catatan…"}
+            </h1>
+            {error && (
+              <>
+                <p role="alert">{error}</p>
                 <button
-                  type="button"
-                  className="btn-primary w-full"
-                  onClick={() => setStage(`t${n}` as Stage)}
+                  className="assessment-primary"
+                  onClick={() => record.current && void save(record.current)}
                 >
-                  Mulai
+                  Coba simpan lagi
                 </button>
-              </div>
+                <button
+                  className="assessment-secondary"
+                  onClick={() => setStage("done")}
+                >
+                  Selesai, lanjut belajar
+                </button>
+              </>
             )}
-
-          {stage === "t1" && (
-            <PhonologicalTest onComplete={done("phonological", "i2")} />
-          )}
-          {stage === "t2" && (
-            <RapidNamingTest onComplete={done("rapidNaming", "i3")} />
-          )}
-          {stage === "t3" && (
-            <SpellingTest onComplete={done("spelling", "i4")} />
-          )}
-          {stage === "t4" && (
-            <DigitSpanTest onComplete={done("digitSpan", "saving")} />
-          )}
-
-          {stage === "saving" && !saveError && (
-            <div
-              className="card flex flex-col items-center gap-4 p-8 text-center"
-              role="status"
-            >
-              <motion.span
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1.4, ease: "linear" }}
-              >
-                <Star size={56} className="fill-accent-500 text-accent-500" />
-              </motion.span>
-              <p className="text-lg font-semibold">
-                Hebat! Sedang menyimpan hasilmu…
-              </p>
+          </section>
+        )}
+        {stage === "done" && (
+          <section className="assessment-card assessment-welcome">
+            <span className="assessment-icon">
+              <Check size={30} aria-hidden="true" />
+            </span>
+            <div className="assessment-card-heading">
+              <h1>Terima kasih!</h1>
+              <p>Kegiatan selesai. Saatnya beristirahat.</p>
             </div>
-          )}
-
-          {stage === "saving" && saveError && (
-            <div
-              className="card flex flex-col items-center gap-4 p-8 text-center"
-              role="alert"
-            >
-              <p className="text-lg font-semibold">Hasilmu belum tersimpan.</p>
-              <p className="text-neutral-600">
-                Minta tolong orang dewasa, lalu ketuk tombol di bawah.
+            {error && (
+              <p role="alert" className="assessment-notice">
+                {error}
               </p>
-              <p className="text-xs text-neutral-500">
-                Catatan untuk orang tua: {saveError}
-              </p>
-              <button
-                type="button"
-                className="btn-primary w-full"
-                onClick={() => final && void save(final, timings)}
-              >
-                Coba simpan lagi
-              </button>
-            </div>
-          )}
-
-          {stage === "done" && (
-            <div className="card flex flex-col items-center gap-5 p-8 text-center">
-              <IconBadge Icon={PartyPopper} />
-              <h2 className="text-3xl font-bold">Kamu hebat, {childName}!</h2>
-              <p className="text-neutral-600">
-                Semua permainan sudah selesai. Yuk lanjut belajar.
-              </p>
+            )}
+            {demo && (
               <Link
-                href={ROUTES.childHome(childId)}
-                className="btn-primary w-full"
+                className="assessment-primary"
+                href={`/screening/${childId}/result`}
               >
-                Mulai Belajar
+                Lihat catatan pendamping
               </Link>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </main>
+            )}
+            <Link
+              className="assessment-secondary"
+              href={demo ? "/demo/belajar" : ROUTES.childHome(childId)}
+            >
+              Lanjut belajar
+            </Link>
+          </section>
+        )}
+      </main>
+      <footer className="assessment-footer">
+        EJA · Belajar sesuai langkahmu.
+      </footer>
+    </div>
   );
 }

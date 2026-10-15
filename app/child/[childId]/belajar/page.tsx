@@ -7,6 +7,7 @@ import { lessons } from "@/features/learning/math/content";
 import { LessonCard } from "@/features/learning/math/lesson-card";
 import { useAppState } from "@/features/learning/state/store";
 import { learningHref } from "@/features/learning/paths";
+import { LearningRecommendation } from "@/features/learning/components/learning-recommendation";
 
 export default function HomePage() {
   const { childId } = useParams<{ childId: string }>();
@@ -65,6 +66,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <LearningRecommendation childId={childId} />
       <section className="overview-row" aria-label="Pencapaian belajar">
         <div className="overview-intro">
           <span className="section-kicker">LANGKAH KECIL, HASIL BESAR</span>

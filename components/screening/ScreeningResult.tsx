@@ -1,72 +1,77 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FlaskConical } from "lucide-react";
-import { AuroraBackground } from "./AuroraBackground";
-import { PrintButton } from "@/components/dashboard/PrintButton";
-import { ScreeningReport } from "@/components/dashboard/ScreeningReport";
-import { ROUTES } from "@/lib/routes";
-import type { RiskLevel, ScreeningScores } from "@/lib/screening/scoring";
+import { FontSelector } from "@/components/accessibility/FontSelector";
+import { Logo } from "@/components/site/Logo";
+import {
+  assessmentRecordSchema,
+  type AssessmentRecord,
+} from "@/lib/screening/assessment";
+import { useAssessmentHistory } from "@/lib/screening/assessment-store";
+import { AssessmentReport } from "./AssessmentReport";
+import "./assessment.css";
 
-interface StoredResult {
-  scores: ScreeningScores;
-  riskScore: number;
-  riskLevel: RiskLevel;
-  completedAt: string;
-  valid?: boolean;
-  invalidReason?: string | null;
-}
-
-/** Hasil tes demo dari halaman depan (tanpa akun, tidak disimpan ke server). Anak sungguhan melihat hasil di dasbor orang tua. */
 export function DemoResult({ childId }: { childId: string }) {
-  const [data, setData] = useState<StoredResult | null>(null);
-  const [checked, setChecked] = useState(false);
-
+  const history = useAssessmentHistory(childId);
+  const [session, setSession] = useState<{
+      childId: string;
+      record: AssessmentRecord | null;
+    } | null>(null),
+    [loaded, setLoaded] = useState("");
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem(`eja-screening-${childId}`);
-      if (raw) setData(JSON.parse(raw) as StoredResult);
+      const parsed = assessmentRecordSchema.safeParse(
+        JSON.parse(
+          sessionStorage.getItem(`eja-assessment-result:${childId}`) ?? "null",
+        ),
+      );
+      setSession({ childId, record: parsed.success ? parsed.data : null });
     } catch {
-      /* abaikan */
+      setSession({ childId, record: null });
     }
-    setChecked(true);
+    setLoaded(childId);
   }, [childId]);
-
+  const record =
+    (session?.childId === childId ? session.record : null) ?? history[0];
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-5 px-4 py-8">
-      <AuroraBackground />
-      <p role="status" className="no-print flex items-center gap-2 text-sm font-medium text-brand-700"><FlaskConical size={16} aria-hidden="true" /> Mode demo: hasil ini tidak disimpan. Di EJA, hasil hanya terlihat oleh orang tua di dasbor.</p>
-
-      {!checked && <div className="card p-8 text-center">Memuat hasil…</div>}
-
-      {checked && !data && (
-        <div className="card flex flex-col items-center gap-4 p-8 text-center">
-          <p className="text-lg font-semibold">Belum ada hasil tes demo.</p>
-          <Link href={ROUTES.screening(childId)} className="btn-primary">Mulai tes demo</Link>
-        </div>
-      )}
-
-      {data && data.valid === false && (
-        <div className="card flex flex-col items-start gap-4 p-8">
-          <h1 className="text-2xl font-bold">Skrining ini belum bisa dinilai</h1>
-          <p className="max-w-2xl text-neutral-700">{data.invalidReason} Coba lagi saat anak santai dan fokus.</p>
-          <Link href={ROUTES.screening(childId)} className="btn-primary">Ulangi tes demo</Link>
-        </div>
-      )}
-
-      {data && data.valid !== false && (
-        <ScreeningReport
-          data={{ childName: "Anak Anda", completedAt: data.completedAt, scores: data.scores, riskScore: data.riskScore, riskLevel: data.riskLevel }}
-          actions={
-            <>
-              <PrintButton />
-              <Link href={ROUTES.screening(childId)} className="btn-ghost">Coba lagi</Link>
-              <Link href="/daftar" className="btn-primary !px-6 !py-3 !text-base">Daftar untuk menyimpan</Link>
-            </>
-          }
-        />
-      )}
-    </main>
+    <div className="assessment-shell">
+      <header className="assessment-header">
+        <Logo />
+        <FontSelector />
+      </header>
+      <main className="assessment-main assessment-main-wide" id="main">
+        <Link className="assessment-back" href="/demo/belajar">
+          ← Pilihan kegiatan
+        </Link>
+        {loaded !== childId ? (
+          <p role="status">Memuat catatan…</p>
+        ) : record ? (
+          <>
+            <AssessmentReport record={record} />
+            <div className="assessment-two">
+              <Link
+                className="assessment-primary"
+                href={`/screening/${childId}`}
+              >
+                Ulangi kegiatan
+              </Link>
+              <Link className="assessment-secondary" href="/demo/belajar">
+                Lanjut belajar
+              </Link>
+            </div>
+            <p className="assessment-helper">
+              Demo · Catatan tersimpan pada browser ini.
+            </p>
+          </>
+        ) : (
+          <section className="assessment-card">
+            <h1>Belum ada catatan tes baru</h1>
+            <Link className="assessment-primary" href={`/screening/${childId}`}>
+              Mulai kegiatan
+            </Link>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }

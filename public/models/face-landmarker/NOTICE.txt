@@ -1,0 +1,14 @@
+MediaPipe Face Landmarker and Vision Tasks runtime
+Copyright Google LLC / MediaPipe contributors. Apache License 2.0; see LICENSE.txt.
+
+Runtime: @mediapipe/tasks-vision 0.10.32
+Source: https://github.com/google-ai-edge/mediapipe
+Runtime files copied without modification from the pinned npm package's wasm directory.
+
+Model: Face Landmarker, float16, version 1
+Source: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+SHA-256: 64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff
+Model documentation: https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker
+
+These models detect face landmarks. The EJA calibration regression is experimental
+and is not a clinically validated eye tracker or a dyslexia classifier.

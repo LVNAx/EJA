@@ -1,4 +1,5 @@
 import type { RiskLevel, ScreeningScores } from "@/lib/screening/scoring";
+import type { AssessmentRecord } from "@/lib/screening/assessment";
 
 export interface ChildProfile {
   id: string;
@@ -58,6 +59,7 @@ export interface PracticeRecord {
 }
 
 export interface ChildData {
+  assessments?: AssessmentRecord[];
   profile: ChildProfile;
   screenings: ScreeningRecord[];
   sessions: LearningSessionRecord[];

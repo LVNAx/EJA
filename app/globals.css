@@ -3,10 +3,28 @@
 @tailwind utilities;
 
 :root {
+  --font-ui: var(--font-outfit);
   --accent: #FF8C61;
   --text: #1E0A45;
   --success: #34D399;
 }
+
+html[data-reading-font="opendyslexic"] { --font-ui: var(--font-open-dyslexic); }
+
+.font-selector { display: inline-flex; flex: none; }
+.font-selector select {
+  min-height: 44px;
+  max-width: 145px;
+  padding: 8px 6px;
+  border: 1px solid #d8b4fe;
+  border-radius: 16px;
+  background: #fff;
+  color: #1e0a45;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.font-selector select:focus-visible { outline: 3px solid #9333ea; outline-offset: 2px; }
 
 html { scroll-behavior: smooth; }
 html, body { min-height: 100%; }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpenText, Calculator, PencilLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpenText, Calculator, Camera, ChartNoAxesColumn, PencilLine, ScanEye } from "lucide-react";
 import { learningHref } from "@/features/learning/paths";
 import { DEMO_CHILD_ID, ROUTES } from "@/lib/routes";
 
@@ -62,6 +62,19 @@ export default function LearningDemoPage() {
         ))}
       </div>
       <p className="mt-6 text-sm text-neutral-600">Catatan demo belajar hanya tersimpan di browser ini.</p>
+      <nav aria-label="Fitur tambahan" className="mt-5 grid gap-3 sm:grid-cols-3">
+        {[
+          { href: "/demo/wajah-mata", label: "Demo wajah & mata", Icon: Camera },
+          { href: learningHref(DEMO_CHILD_ID, "/latihan/pola-membaca"), label: "Pola membaca", Icon: ScanEye },
+          { href: learningHref(DEMO_CHILD_ID, "/perkembangan"), label: "Perkembangan belajar", Icon: ChartNoAxesColumn },
+        ].map(({ href, label, Icon }) => (
+          <Link key={href} href={href} prefetch={false} className="flex min-h-14 min-w-0 items-center gap-3 rounded-2xl border border-white/80 bg-white/65 px-4 py-3 text-sm font-medium text-ink transition-colors hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600">
+            <Icon size={19} className="shrink-0 text-brand-700" aria-hidden="true" />
+            <span className="min-w-0 flex-1 break-words">{label}</span>
+            <ArrowRight size={16} className="shrink-0 text-neutral-500" aria-hidden="true" />
+          </Link>
+        ))}
+      </nav>
       <p className="mt-4 text-neutral-600">Ingin mencoba empat permainan skrining? <Link href={ROUTES.screening(DEMO_CHILD_ID)} className="inline-flex min-h-11 items-center font-semibold text-brand-700 underline">Coba Skrining</Link></p>
     </section>
   );
