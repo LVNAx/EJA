@@ -8,6 +8,7 @@ import {
   extractText,
   MAX_EXPLANATION_CHARS,
   GROQ_ENDPOINT,
+  violatesGuardrail,
   type AdviceInput,
 } from "./advice-explanation";
 
@@ -69,6 +70,16 @@ describe("penjelasan saran dengan Groq", () => {
     expect(url).toBe(GROQ_ENDPOINT);
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer kunci");
     expect(String(init.body)).not.toContain("kunci");
+  });
+
+  it("meminta ulang sekali bila jawaban menyebut istilah terlarang, lalu menolak", async () => {
+    const retry = vi.fn().mockResolvedValueOnce(okResponse("Kemampuan pecahan masih rendah.")).mockResolvedValueOnce(okResponse("Ayo ulangi pecahan bersama."));
+    expect(await explainWithGroq(input, { apiKey: "k", fetchImpl: retry })).toEqual({ ok: true, text: "Ayo ulangi pecahan bersama." });
+    expect(retry).toHaveBeenCalledTimes(2);
+    const always = vi.fn(async () => okResponse("Anak mungkin berisiko disleksia."));
+    expect(await explainWithGroq(input, { apiKey: "k", fetchImpl: always })).toEqual({ ok: false, reason: "unavailable" });
+    expect(always).toHaveBeenCalledTimes(2);
+    expect(violatesGuardrail("Diskusikan dengan guru BK atau psikolog.")).toBe(false);
   });
 
   it("gagal dengan tenang bila API error, timeout, atau respons kosong", async () => {

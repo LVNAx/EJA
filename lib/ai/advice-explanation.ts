@@ -106,19 +106,28 @@ export async function explainWithGroq(
   const parsed = adviceInputSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, reason: "invalid" };
   const doFetch = opts.fetchImpl ?? fetch;
-  try {
-    const res = await doFetch(GROQ_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${opts.apiKey}` },
-      body: JSON.stringify(buildRequest(parsed.data, opts.model || DEFAULT_GROQ_MODEL)),
-      signal: AbortSignal.timeout(opts.timeoutMs ?? 15000),
-      cache: "no-store",
-    });
-    if (!res.ok) return { ok: false, reason: "unavailable" };
-    const out = extractText(await res.json());
-    if (!out) return { ok: false, reason: "unavailable" };
-    return { ok: true, text: cleanExplanation(out) };
-  } catch {
-    return { ok: false, reason: "unavailable" };
+  // Prompt saja tidak cukup: jawaban yang tetap menyebut istilah terlarang diminta ulang sekali, lalu ditolak.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await doFetch(GROQ_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${opts.apiKey}` },
+        body: JSON.stringify(buildRequest(parsed.data, opts.model || DEFAULT_GROQ_MODEL)),
+        signal: AbortSignal.timeout(opts.timeoutMs ?? 15000),
+        cache: "no-store",
+      });
+      if (!res.ok) return { ok: false, reason: "unavailable" };
+      const out = extractText(await res.json());
+      if (!out) return { ok: false, reason: "unavailable" };
+      const text = cleanExplanation(out);
+      if (!violatesGuardrail(text)) return { ok: true, text };
+    } catch {
+      return { ok: false, reason: "unavailable" };
+    }
   }
+  return { ok: false, reason: "unavailable" };
 }
+
+/** Istilah yang tidak boleh muncul di penjelasan untuk orang tua. */
+export const FORBIDDEN_TERMS = /diagnos|disleksia|dyslexi|\brisiko\b|\bberisiko\b|\brendah\b|\bbodoh\b|\blambat belajar\b|\bgagal\b/i;
+export const violatesGuardrail = (text: string) => FORBIDDEN_TERMS.test(text);
