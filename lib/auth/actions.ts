@@ -53,7 +53,10 @@ export async function signUp(_prev: FormState, form: FormData): Promise<FormStat
 
   const exists = data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
   if (exists || error?.message.toLowerCase().includes("already registered")) return { error: "Email ini sudah terdaftar. Silakan masuk." };
-  if (error) return { error: "Pendaftaran belum berhasil. Coba lagi sebentar lagi." };
+  if (error) {
+    if (error.message.toLowerCase().includes("rate limit")) return { error: "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi." };
+    return { error: "Pendaftaran belum berhasil. Coba lagi sebentar lagi." };
+  }
 
   // Konfirmasi email dimatikan: sesi langsung ada. Bila dinyalakan, minta orang tua memeriksa email.
   if (data.session && data.user) {
