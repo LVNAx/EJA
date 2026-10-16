@@ -239,6 +239,8 @@ Schema, RPC PIN dan bucket ilustrasi privat sudah terpasang pada project `xnlnzd
    | `CRON_SECRET`                   | Melindungi `/api/cron/notifications`                                                                                  |
    | `RESEND_API_KEY`, `EMAIL_FROM`  | Pengiriman email. Tanpa ini cron hanya _dry-run_                                                                      |
    | `NEXT_PUBLIC_SITE_URL`          | Tautan di dalam email                                                                                                 |
+   | `GROQ_API_KEY`                  | Penjelasan saran pendampingan dengan AI (Groq). Hanya di server; tanpa ini tombol menampilkan pesan belum aktif       |
+   | `GROQ_MODEL`                    | Opsional, bawaan `openai/gpt-oss-120b`                                                                                |
 
    Buat secret acak dengan:
 

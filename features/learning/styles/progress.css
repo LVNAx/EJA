@@ -189,3 +189,16 @@
     padding: 16px;
   }
 }
+
+.advice-ai {
+  margin: 12px 0;
+}
+.advice-ai-text {
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #f3d3c4;
+}
+.advice-ai-text > p:nth-child(2) {
+  white-space: pre-line;
+}
