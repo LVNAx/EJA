@@ -11,6 +11,7 @@ import { useAssessmentHistory } from "@/lib/screening/assessment-store";
 import type { AssessmentRecord } from "@/lib/screening/assessment";
 import { recommendNextPractice } from "../model/practice-plan";
 import { MathResults } from "./math-results";
+import { AdviceExplainer } from "./advice-explainer";
 import { useReadingStudies } from "../gaze/study-store";
 import { ReadingStudyHistory } from "../gaze/reading-study-report";
 import "../gaze/reading-study.css";
@@ -170,6 +171,25 @@ export function LearningProgressReport({
             <h3>Saran pendampingan: {recommendation.skill.label}</h3>
             <p>{recommendation.reason}</p>
             <p>{recommendation.skill.support}</p>
+            <AdviceExplainer
+              key={`${showingSimulation}-${recommendation.skill.label}-${model.assessedSessions}`}
+              childId={childId}
+              input={{
+                focus: {
+                  label: recommendation.skill.label,
+                  reason: recommendation.reason,
+                  support: recommendation.skill.support,
+                },
+                skills: model.skills.map((item) => ({
+                  label: item.skill.label,
+                  sessions: item.history.length,
+                  successes: item.successes,
+                  probability: item.enoughData ? item.probability : null,
+                  interval: item.enoughData ? item.interval : null,
+                  trend: TREND_LABELS[item.trend],
+                })),
+              }}
+            />
             <Link
               className="progress-button"
               href={learningHref(childId, recommendation.skill.path)}
