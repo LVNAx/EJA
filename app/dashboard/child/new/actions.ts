@@ -35,7 +35,7 @@ export async function createChild(_prev: FormState, form: FormData): Promise<For
 
   const pin_hash = await bcrypt.hash(pin, 10);
   const { data, error } = await supabase.from("children").insert({ parent_id: auth.user.id, name, grade, school: school || null, avatar, pin_hash }).select("id").single();
-  if (error || !data) return { error: "Profil belum tersimpan. Coba lagi sebentar lagi." };
+  if (error || !data) return { error: `[DEBUG] ${error?.message ?? "no data"} | code: ${error?.code}` };
 
   redirect(ROUTES.childDashboard(data.id));
 }
